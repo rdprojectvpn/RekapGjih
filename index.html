@@ -3,607 +3,610 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SalaryDash Pro - Asisten Keuangan Pintar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SalaryDash Pro</title>
     
-    <!-- Meta Tags untuk Progressive Web App (PWA) -->
+    <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#020617"> <!-- Menggunakan warna slate-950 -->
     <link id="pwa-manifest" rel="manifest" href="">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind, ChartJS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
+        :root { 
+            --sat: env(safe-area-inset-top); 
+            --sab: env(safe-area-inset-bottom); 
+            --app-bg: #05050A; /* Premium Midnight Dark */
+        }
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a; /* slate-900 */
-            color: #e2e8f0; /* slate-200 */
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--app-bg); 
+            color: #f8fafc;
             -webkit-tap-highlight-color: transparent;
+            user-select: none; 
+            overscroll-behavior-y: none; 
         }
         
-        /* Custom Scrollbar for dark theme */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        /* Ambient Glow Background */
+        .ambient-glow {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            background: radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.12), transparent 40%),
+                        radial-gradient(circle at 100% 100%, rgba(217, 70, 239, 0.08), transparent 40%);
+        }
 
-        /* Progress bar animation */
-        @keyframes fillProgress { from { width: 0; } }
-        .progress-animate { animation: fillProgress 1s ease-out forwards; }
-        
-        /* PIN Dots animation */
-        .pin-dot.active { background-color: #6366f1; border-color: #6366f1; }
-        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+        /* Glassmorphism Classes */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
+        
+        .glass-nav { 
+            background: rgba(5, 5, 10, 0.85); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
+            border-top: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        input, select, textarea { user-select: auto; }
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        @keyframes fillProgress { from { width: 0; } }
+        .progress-animate { animation: fillProgress 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        .bottom-sheet-container { transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .bottom-sheet-container.open { transform: translateY(0); }
+        
+        .modal-overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+        .pin-dot.active { background-color: #818cf8; border-color: #818cf8; transform: scale(1.2); box-shadow: 0 0 10px rgba(129,140,248,0.5); }
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+
+        .is-blurred { filter: blur(6px); opacity: 0.6; pointer-events: none; transition: filter 0.3s, opacity 0.3s; }
+        .drag-handle { width: 48px; height: 4px; background-color: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto; }
+        
+        /* Gradient Text Helper */
+        .text-gradient { background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
-<body class="antialiased min-h-screen flex flex-col relative">
+<body class="antialiased h-screen w-full flex flex-col overflow-hidden relative pt-[var(--sat)] pb-[var(--sab)]">
 
-    <!-- Layar Kunci PIN (Muncul paling atas saat awal) -->
-    <div id="pin-screen" class="fixed inset-0 bg-slate-950 z-[999] flex flex-col items-center justify-center transition-opacity duration-500">
-        <div class="bg-indigo-500/20 p-4 rounded-full mb-6">
-            <i class="fa-solid fa-shield-halved text-5xl text-indigo-400"></i>
-        </div>
-        <h2 id="pin-title" class="text-2xl font-bold text-white mb-2">Memuat Keamanan...</h2>
-        <p id="pin-subtitle" class="text-slate-400 text-sm mb-8 text-center px-6">Mohon tunggu sebentar.</p>
+    <div class="ambient-glow"></div>
+
+    <div id="pin-screen" class="absolute inset-0 bg-[#05050A] z-[9999] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-6 rounded-full mb-8 border border-indigo-500/20 shadow-[0_0_30px_rgba(99,102,241,0.15)]"><i class="fa-solid fa-shield-halved text-5xl text-indigo-400"></i></div>
+        <h2 id="pin-title" class="text-3xl font-extrabold text-white mb-2 tracking-tight">Keamanan</h2>
+        <p id="pin-subtitle" class="text-slate-400 text-sm mb-12 text-center px-6">Memuat antarmuka...</p>
         
-        <div class="flex gap-4 mb-10" id="pin-dots">
-            <div class="w-4 h-4 rounded-full bg-slate-800 border border-slate-600 pin-dot transition-colors duration-200"></div>
-            <div class="w-4 h-4 rounded-full bg-slate-800 border border-slate-600 pin-dot transition-colors duration-200"></div>
-            <div class="w-4 h-4 rounded-full bg-slate-800 border border-slate-600 pin-dot transition-colors duration-200"></div>
-            <div class="w-4 h-4 rounded-full bg-slate-800 border border-slate-600 pin-dot transition-colors duration-200"></div>
+        <div class="flex gap-6 mb-14" id="pin-dots">
+            <div class="w-3.5 h-3.5 rounded-full bg-white/5 border border-white/20 pin-dot transition-all duration-200"></div>
+            <div class="w-3.5 h-3.5 rounded-full bg-white/5 border border-white/20 pin-dot transition-all duration-200"></div>
+            <div class="w-3.5 h-3.5 rounded-full bg-white/5 border border-white/20 pin-dot transition-all duration-200"></div>
+            <div class="w-3.5 h-3.5 rounded-full bg-white/5 border border-white/20 pin-dot transition-all duration-200"></div>
         </div>
         
-        <div class="grid grid-cols-3 gap-6">
-            <button onclick="window.pressPin('1')" class="w-16 h-16 rounded-full bg-slate-800 text-white text-2xl font-semibold hover:bg-slate-700 active:bg-indigo-500 transition-colors shadow-lg">1</button>
-            <button onclick="window.pressPin('2')" class="w-16 h-16 rounded-full bg-slate-800 text-white text-2xl font-semibold hover:bg-slate-700 active:bg-indigo-500 transition-colors shadow-lg">2</button>
-            <button onclick="window.pressPin('3')" class="w-16 h-16 rounded-full bg-slate-800 text-white text-2xl font-semibold hover:bg-slate-700 active:bg-indigo-500 transition-colors shadow-lg">3</button>
-            <button onclick="window.pressPin('4')" class="w-16 h-16 rounded-full bg-slate-800 text-white text-2xl font-semibold hover:bg-slate-700 active:bg-indigo-500 transition-colors shadow-lg">4</button>
-            <button onclick="window.pressPin('5')" class="w-16 h-16 rounded-full bg-slate-800 text-white text-2xl font-semibold hover:bg-slate-700 active:bg-indigo-500 transition-colors shadow-lg">5</button>
-            <button onclick="window.pressPin('6')" class="w-16 h-16 rounded-full bg-slate-800 text-white text-2xl font-semibold hover:bg-slate-700 active:bg-indigo-500 transition-colors shadow-lg">6</button>
-            <button onclick="window.pressPin('7')" class="w-16 h-16 rounded-full bg-slate-800 text-white text-2xl font-semibold hover:bg-slate-700 active:bg-indigo-500 transition-colors shadow-lg">7</button>
-            <button onclick="window.pressPin('8')" class="w-16 h-16 rounded-full bg-slate-800 text-white text-2xl font-semibold hover:bg-slate-700 active:bg-indigo-500 transition-colors shadow-lg">8</button>
-            <button onclick="window.pressPin('9')" class="w-16 h-16 rounded-full bg-slate-800 text-white text-2xl font-semibold hover:bg-slate-700 active:bg-indigo-500 transition-colors shadow-lg">9</button>
+        <div class="grid grid-cols-3 gap-x-10 gap-y-8">
+            <button onclick="window.pressPin('1')" class="w-16 h-16 rounded-full bg-white/5 border border-white/5 text-white text-2xl font-medium active:bg-white/10 active:scale-90 transition-all">1</button>
+            <button onclick="window.pressPin('2')" class="w-16 h-16 rounded-full bg-white/5 border border-white/5 text-white text-2xl font-medium active:bg-white/10 active:scale-90 transition-all">2</button>
+            <button onclick="window.pressPin('3')" class="w-16 h-16 rounded-full bg-white/5 border border-white/5 text-white text-2xl font-medium active:bg-white/10 active:scale-90 transition-all">3</button>
+            <button onclick="window.pressPin('4')" class="w-16 h-16 rounded-full bg-white/5 border border-white/5 text-white text-2xl font-medium active:bg-white/10 active:scale-90 transition-all">4</button>
+            <button onclick="window.pressPin('5')" class="w-16 h-16 rounded-full bg-white/5 border border-white/5 text-white text-2xl font-medium active:bg-white/10 active:scale-90 transition-all">5</button>
+            <button onclick="window.pressPin('6')" class="w-16 h-16 rounded-full bg-white/5 border border-white/5 text-white text-2xl font-medium active:bg-white/10 active:scale-90 transition-all">6</button>
+            <button onclick="window.pressPin('7')" class="w-16 h-16 rounded-full bg-white/5 border border-white/5 text-white text-2xl font-medium active:bg-white/10 active:scale-90 transition-all">7</button>
+            <button onclick="window.pressPin('8')" class="w-16 h-16 rounded-full bg-white/5 border border-white/5 text-white text-2xl font-medium active:bg-white/10 active:scale-90 transition-all">8</button>
+            <button onclick="window.pressPin('9')" class="w-16 h-16 rounded-full bg-white/5 border border-white/5 text-white text-2xl font-medium active:bg-white/10 active:scale-90 transition-all">9</button>
             <div></div>
-            <button onclick="window.pressPin('0')" class="w-16 h-16 rounded-full bg-slate-800 text-white text-2xl font-semibold hover:bg-slate-700 active:bg-indigo-500 transition-colors shadow-lg">0</button>
-            <button onclick="window.deletePin()" class="w-16 h-16 rounded-full bg-transparent text-slate-400 text-xl hover:text-white transition-colors flex items-center justify-center"><i class="fa-solid fa-delete-left"></i></button>
+            <button onclick="window.pressPin('0')" class="w-16 h-16 rounded-full bg-white/5 border border-white/5 text-white text-2xl font-medium active:bg-white/10 active:scale-90 transition-all">0</button>
+            <button onclick="window.deletePin()" class="w-16 h-16 rounded-full bg-transparent text-slate-400 text-xl active:scale-90 active:text-white transition-all flex items-center justify-center"><i class="fa-solid fa-delete-left"></i></button>
         </div>
-        
-        <button onclick="window.resetPinWarning()" class="mt-10 text-sm text-slate-500 hover:text-slate-300 underline underline-offset-4">Reset Ulang PIN & Data</button>
     </div>
 
-    <!-- Navbar -->
-    <nav class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col sm:flex-row justify-between h-auto sm:h-16 items-center py-3 sm:py-0 gap-3 sm:gap-0">
-                <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg shadow-lg">
-                            <i class="fa-solid fa-wallet text-white text-xl"></i>
-                        </div>
-                        <h1 class="text-xl font-bold text-white tracking-tight">Salary<span class="text-indigo-400">Dash</span> <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30 align-middle ml-1">PRO</span></h1>
-                    </div>
-                    
-                    <!-- Tombol Sensor Layar (Blur Balance) -->
-                    <button onclick="window.toggleBlur()" class="sm:ml-4 bg-slate-900 border border-slate-700 p-2 rounded-full text-slate-400 hover:text-white hover:border-slate-500 transition-colors" title="Mode Privasi (Sensor Uang)">
-                        <i id="blur-icon" class="fa-solid fa-eye text-lg"></i>
-                    </button>
-                </div>
-                
-                <div class="flex flex-wrap items-center gap-3 justify-center">
-                    <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-1">
-                        <i class="fa-solid fa-users text-slate-400 ml-2 text-sm"></i>
-                        <select id="pemilikFilter" onchange="window.handleFilterChange()" class="bg-transparent text-white text-sm focus:ring-0 focus:outline-none block p-1.5 cursor-pointer">
-                            <option value="saya">Gaji Saya</option>
-                            <option value="pasangan">Gaji Pasangan</option>
-                            <option value="gabungan">Gabungan (Keluarga)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-1">
-                        <i class="fa-regular fa-calendar text-slate-400 ml-2 text-sm"></i>
-                        <select id="tahunSelect" onchange="window.handleFilterChange()" class="bg-transparent text-white text-sm focus:ring-0 focus:outline-none block p-1.5 cursor-pointer">
-                            <option value="semua">Semua Tahun</option>
-                        </select>
-                    </div>
-                </div>
+    <header class="bg-[#05050A]/80 backdrop-blur-xl border-b border-white/5 z-40 px-5 py-4 flex-shrink-0">
+        <div class="flex justify-between items-center mb-5">
+            <div class="flex items-center gap-2.5">
+                <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-xl shadow-[0_4px_15px_rgba(99,102,241,0.4)]"><i class="fa-solid fa-wallet text-white text-sm"></i></div>
+                <h1 class="text-xl font-extrabold text-white tracking-tight">Salary<span class="text-gradient">Dash</span></h1>
+            </div>
+            <div class="flex items-center gap-3.5">
+                <button onclick="window.toggleBlur()" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 active:scale-90 transition-transform"><i id="blur-icon" class="fa-solid fa-eye text-sm"></i></button>
+                <button onclick="window.openSettings()" class="active:scale-90 transition-transform relative">
+                    <img src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&rounded=xl&bold=true" class="w-9 h-9 rounded-xl border border-white/20 shadow-sm" alt="Profile">
+                    <div class="absolute -bottom-1.5 -right-1.5 bg-[#05050A] rounded-full p-1"><i class="fa-solid fa-gear text-[10px] text-slate-400"></i></div>
+                </button>
             </div>
         </div>
-    </nav>
-
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         
-        <!-- Summary Cards (Diperbarui dengan Arus Kas / Pengeluaran) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-sm relative overflow-hidden group">
-                <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                <div class="flex items-center gap-4 relative z-10">
-                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-700"><i class="fa-solid fa-sack-dollar text-indigo-400 text-xl"></i></div>
-                    <div>
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Take Home Pay</p>
-                        <h3 class="text-2xl font-bold text-white mt-1 truncate" id="total-gaji">Rp 0</h3>
-                    </div>
-                </div>
+        <div class="flex gap-3">
+            <div class="flex-1 glass-card rounded-2xl px-3.5 py-2.5 flex items-center gap-2">
+                <i class="fa-solid fa-users text-indigo-400 text-xs"></i>
+                <select id="pemilikFilter" onchange="window.handleFilterChange()" class="bg-transparent text-white font-semibold text-sm focus:outline-none w-full appearance-none">
+                    <option value="saya" class="bg-slate-900">Gaji Saya</option>
+                    <option value="pasangan" class="bg-slate-900">Gaji Pasangan</option>
+                    <option value="gabungan" class="bg-slate-900">Keluarga (Gabungan)</option>
+                </select>
+                <i class="fa-solid fa-chevron-down text-slate-500 text-[10px]"></i>
             </div>
-
-            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-sm relative overflow-hidden group">
-                <div class="absolute right-0 top-0 w-24 h-24 bg-rose-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                <div class="flex items-center gap-4 relative z-10">
-                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-700"><i class="fa-solid fa-receipt text-rose-400 text-xl"></i></div>
-                    <div>
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Pengeluaran</p>
-                        <h3 class="text-2xl font-bold text-rose-400 mt-1 truncate" id="total-pengeluaran">Rp 0</h3>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-sm relative overflow-hidden group">
-                <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                <div class="flex items-center gap-4 relative z-10">
-                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-700"><i class="fa-solid fa-piggy-bank text-emerald-400 text-xl"></i></div>
-                    <div>
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Sisa Uang (Arus Kas)</p>
-                        <h3 class="text-2xl font-bold text-emerald-400 mt-1 truncate" id="sisa-uang">Rp 0</h3>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-sm relative overflow-hidden group">
-                <div class="absolute right-0 top-0 w-24 h-24 bg-amber-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                <div class="flex items-center gap-4 relative z-10">
-                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-700"><i class="fa-solid fa-chart-pie text-amber-400 text-xl"></i></div>
-                    <div>
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Rata-rata Gaji / Bln</p>
-                        <h3 class="text-2xl font-bold text-white mt-1 truncate" id="rata-gaji">Rp 0</h3>
-                    </div>
-                </div>
+            <div class="glass-card rounded-2xl px-3.5 py-2.5 flex items-center gap-2">
+                <i class="fa-regular fa-calendar text-emerald-400 text-xs"></i>
+                <select id="tahunSelect" onchange="window.handleFilterChange()" class="bg-transparent text-white font-semibold text-sm focus:outline-none appearance-none">
+                    <option value="semua" class="bg-slate-900">Semua Tahun</option>
+                </select>
+                <i class="fa-solid fa-chevron-down text-slate-500 text-[10px]"></i>
             </div>
         </div>
+    </header>
 
-        <!-- Smart Assistant Insights -->
-        <div class="mb-8 bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl border border-indigo-500/30 shadow-lg overflow-hidden relative">
-            <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
-            <div class="p-5 border-b border-slate-700/50 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-robot text-indigo-400 text-xl"></i>
-                    <h2 class="text-lg font-bold text-white">Analisis Cerdas (Bulan Terakhir)</h2>
+    <main class="flex-1 overflow-y-auto pb-28 relative" id="main-content">
+        
+        <div id="view-home" class="p-5 space-y-6 fade-in">
+            <div class="flex overflow-x-auto gap-4 pb-2 snap-x">
+                <div class="min-w-[280px] bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 rounded-3xl p-6 snap-center shadow-[0_8px_30px_rgba(99,102,241,0.3)] relative overflow-hidden border border-white/10">
+                    <div class="absolute -right-6 -top-6 opacity-20 text-9xl transform rotate-12"><i class="fa-solid fa-sack-dollar"></i></div>
+                    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+                    <p class="text-xs font-semibold text-indigo-100 mb-1.5 opacity-90 relative z-10">Total Take Home Pay</p>
+                    <h3 class="text-3xl font-extrabold text-white tracking-tight money-text relative z-10" id="total-gaji">Rp 0</h3>
+                    <div class="mt-4 flex items-center gap-2 bg-black/20 backdrop-blur-sm w-fit px-3 py-1.5 rounded-xl border border-white/10 relative z-10">
+                        <i class="fa-solid fa-chart-line text-[10px] text-emerald-300"></i>
+                        <p class="text-[11px] text-indigo-50"><span id="rata-gaji" class="font-bold money-text">Rp 0</span> /bln</p>
+                    </div>
                 </div>
-                <span id="insight-month" class="text-xs font-semibold bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/30">Belum ada data</span>
+                <div class="min-w-[170px] glass-card rounded-3xl p-5 snap-center">
+                    <div class="bg-rose-500/10 w-8 h-8 rounded-full flex items-center justify-center mb-3 border border-rose-500/20"><i class="fa-solid fa-receipt text-rose-400 text-xs"></i></div>
+                    <p class="text-xs font-medium text-slate-400 mb-1">Pengeluaran</p>
+                    <h3 class="text-lg font-bold text-rose-400 money-text" id="total-pengeluaran">Rp 0</h3>
+                </div>
+                <div class="min-w-[170px] glass-card rounded-3xl p-5 snap-center">
+                    <div class="bg-emerald-500/10 w-8 h-8 rounded-full flex items-center justify-center mb-3 border border-emerald-500/20"><i class="fa-solid fa-piggy-bank text-emerald-400 text-xs"></i></div>
+                    <p class="text-xs font-medium text-slate-400 mb-1">Sisa/Ditabung</p>
+                    <h3 class="text-lg font-bold text-emerald-400 money-text" id="sisa-uang">Rp 0</h3>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-3xl p-5">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2"><i class="fa-solid fa-robot text-indigo-400"></i> Analisis Cerdas</h2>
+                    <span id="insight-month" class="text-[10px] font-bold bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-lg">...</span>
+                </div>
+                <div id="insight-container" class="space-y-3">
+                    <div class="text-center text-slate-500 text-sm py-4"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Menganalisis...</div>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-3xl p-5">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-sm font-bold text-white">Arus Kas</h2>
+                    <div class="flex bg-black/40 rounded-xl p-1 border border-white/5">
+                        <button onclick="window.changeChartType('bar')" id="btn-bar" class="px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md transition-all">Bar</button>
+                        <button onclick="window.changeChartType('line')" id="btn-line" class="px-4 py-1.5 rounded-lg text-[10px] font-bold text-slate-400 transition-all">Line</button>
+                    </div>
+                </div>
+                <div class="relative h-56 w-full"><canvas id="mainChart"></canvas></div>
             </div>
             
-            <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10" id="insight-container">
-                <div class="col-span-3 text-center text-slate-400 py-4"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Menunggu data...</div>
+            <div class="glass-card rounded-3xl p-5 mb-4">
+                <h2 class="text-sm font-bold text-white mb-3">Komposisi Pendapatan</h2>
+                <div class="relative h-48 w-full flex justify-center"><canvas id="compositionChart"></canvas></div>
             </div>
         </div>
 
-        <!-- Smart Calculators Menu -->
-        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-toolbox text-slate-400"></i> Alat Finansial</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <button onclick="window.openCalc('kredit')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 p-4 rounded-xl text-left transition-all group hover:border-blue-500 shadow-sm flex flex-col items-start gap-3">
-                <div class="bg-blue-500/20 p-3 rounded-lg text-blue-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-shield-halved text-xl"></i></div>
-                <div><h4 class="font-bold text-white text-sm">Kredit Sehat</h4><p class="text-xs text-slate-400 mt-1">Simulasi batas aman cicilan</p></div>
-            </button>
-            <button onclick="window.openCalc('darurat')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 p-4 rounded-xl text-left transition-all group hover:border-emerald-500 shadow-sm flex flex-col items-start gap-3">
-                <div class="bg-emerald-500/20 p-3 rounded-lg text-emerald-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-umbrella text-xl"></i></div>
-                <div><h4 class="font-bold text-white text-sm">Dana Darurat</h4><p class="text-xs text-slate-400 mt-1">Target tabungan aman</p></div>
-            </button>
-            <button onclick="window.openCalc('wishlist')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 p-4 rounded-xl text-left transition-all group hover:border-pink-500 shadow-sm flex flex-col items-start gap-3">
-                <div class="bg-pink-500/20 p-3 rounded-lg text-pink-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-crosshairs text-xl"></i></div>
-                <div><h4 class="font-bold text-white text-sm">Target Impian</h4><p class="text-xs text-slate-400 mt-1">Kapan barang terbeli?</p></div>
-            </button>
-            <button onclick="window.openCalc('pajak')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 p-4 rounded-xl text-left transition-all group hover:border-amber-500 shadow-sm flex flex-col items-start gap-3">
-                <div class="bg-amber-500/20 p-3 rounded-lg text-amber-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-file-invoice-dollar text-xl"></i></div>
-                <div><h4 class="font-bold text-white text-sm">Simulasi BPJS</h4><p class="text-xs text-slate-400 mt-1">Gaji kotor ke bersih</p></div>
-            </button>
-        </div>
-
-        <!-- Charts Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-sm p-6 lg:col-span-2">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <div>
-                        <h2 class="text-lg font-bold text-white">Tren Gaji vs Sisa Uang</h2>
-                        <p class="text-sm text-slate-400">Pemantauan Take Home Pay dan Arus Kas</p>
-                    </div>
-                    <div class="flex bg-slate-900 rounded-lg p-1 border border-slate-700">
-                        <button onclick="window.changeChartType('bar')" id="btn-bar" class="px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors">Bar</button>
-                        <button onclick="window.changeChartType('line')" id="btn-line" class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors">Line</button>
-                    </div>
-                </div>
-                <div class="relative h-72 w-full"><canvas id="mainChart"></canvas></div>
-            </div>
-
-            <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-sm p-6 lg:col-span-1 flex flex-col">
+        <div id="view-history" class="p-5 hidden fade-in">
+            <div class="flex justify-between items-end mb-5">
                 <div>
-                    <h2 class="text-lg font-bold text-white">Komposisi Pendapatan</h2>
-                    <p class="text-sm text-slate-400">Sumber uang masuk Anda</p>
-                </div>
-                <div class="relative flex-grow w-full mt-4 flex justify-center items-center min-h-[200px]">
-                    <canvas id="compositionChart"></canvas>
+                    <h2 class="text-xl font-extrabold text-white tracking-tight">Riwayat Pemasukan</h2>
+                    <p class="text-xs text-slate-400 mt-1" id="history-subtitle">Menampilkan seluruh catatan</p>
                 </div>
             </div>
+            <div id="history-list" class="space-y-4"></div>
         </div>
 
-        <!-- Table Section -->
-        <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-sm overflow-hidden mb-8">
-            <div class="px-6 py-5 border-b border-slate-700 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-800/50">
-                <div>
-                    <h2 class="text-lg font-bold text-white">Rincian Arus Kas Bulanan</h2>
-                    <p class="text-sm text-slate-400" id="table-subtitle">Kelola dan catat pemasukan serta pengeluaran</p>
-                </div>
-                <div class="flex flex-wrap gap-3">
-                    <button onclick="window.openFormModal('add')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2 border border-indigo-500">
-                        <i class="fa-solid fa-plus"></i> <span>Tambah Data</span>
-                    </button>
-                    <button onclick="window.openImportModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2 border border-emerald-500">
-                        <i class="fa-solid fa-file-import"></i> <span>Import CSV</span>
-                    </button>
-                    <button onclick="window.downloadCSV()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-600 flex items-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-download"></i> <span>Unduh CSV</span>
-                    </button>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-slate-900/80 border-b border-slate-700">
-                        <tr>
-                            <th class="px-4 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Periode</th>
-                            <th class="px-4 py-4 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Gaji Pokok+Tunj</th>
-                            <th class="px-4 py-4 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Bonus</th>
-                            <th class="px-4 py-4 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Potongan</th>
-                            <th class="px-4 py-4 text-right text-xs font-medium text-indigo-300 uppercase tracking-wider border-l border-slate-700">Take Home Pay</th>
-                            <th class="px-4 py-4 text-right text-xs font-medium text-rose-300 uppercase tracking-wider">Pengeluaran</th>
-                            <th class="px-4 py-4 text-right text-xs font-medium text-emerald-300 uppercase tracking-wider">Sisa Uang</th>
-                            <th class="px-4 py-4 text-center text-xs font-medium text-slate-400 uppercase tracking-wider">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body" class="divide-y divide-slate-700/50"></tbody>
-                    <tfoot class="bg-slate-900/90 border-t-2 border-slate-700" id="table-foot"></tfoot>
-                </table>
+        <div id="view-tools" class="p-5 hidden fade-in">
+            <h2 class="text-xl font-extrabold text-white tracking-tight mb-5">Kalkulator Cerdas</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="window.openCalc('kredit')" class="glass-card p-5 rounded-3xl text-left active:scale-95 transition-transform flex flex-col items-center text-center gap-3">
+                    <div class="bg-blue-500/10 border border-blue-500/20 w-14 h-14 rounded-2xl flex items-center justify-center text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.15)]"><i class="fa-solid fa-shield-halved text-2xl"></i></div>
+                    <div><h4 class="font-bold text-white text-sm">Kredit Sehat</h4><p class="text-[10px] text-slate-400 mt-1">Batas aman cicilan</p></div>
+                </button>
+                <button onclick="window.openCalc('darurat')" class="glass-card p-5 rounded-3xl text-left active:scale-95 transition-transform flex flex-col items-center text-center gap-3">
+                    <div class="bg-emerald-500/10 border border-emerald-500/20 w-14 h-14 rounded-2xl flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]"><i class="fa-solid fa-umbrella text-2xl"></i></div>
+                    <div><h4 class="font-bold text-white text-sm">Dana Darurat</h4><p class="text-[10px] text-slate-400 mt-1">Target tabungan</p></div>
+                </button>
+                <button onclick="window.openCalc('wishlist')" class="glass-card p-5 rounded-3xl text-left active:scale-95 transition-transform flex flex-col items-center text-center gap-3">
+                    <div class="bg-pink-500/10 border border-pink-500/20 w-14 h-14 rounded-2xl flex items-center justify-center text-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.15)]"><i class="fa-solid fa-crosshairs text-2xl"></i></div>
+                    <div><h4 class="font-bold text-white text-sm">Wishlist</h4><p class="text-[10px] text-slate-400 mt-1">Kapan terbeli?</p></div>
+                </button>
+                <button onclick="window.openCalc('pajak')" class="glass-card p-5 rounded-3xl text-left active:scale-95 transition-transform flex flex-col items-center text-center gap-3">
+                    <div class="bg-amber-500/10 border border-amber-500/20 w-14 h-14 rounded-2xl flex items-center justify-center text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.15)]"><i class="fa-solid fa-file-invoice-dollar text-2xl"></i></div>
+                    <div><h4 class="font-bold text-white text-sm">Simulasi BPJS</h4><p class="text-[10px] text-slate-400 mt-1">Bruto ke Bersih</p></div>
+                </button>
             </div>
         </div>
     </main>
 
-    <!-- Modal Add/Edit Data (Ditambahkan input Pengeluaran) -->
-    <div id="form-modal" class="fixed inset-0 z-[100] hidden">
-        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" onclick="window.closeFormModal()"></div>
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-                <div class="relative transform overflow-hidden rounded-xl bg-slate-800 border border-slate-700 text-left shadow-xl transition-all sm:my-8 w-full sm:max-w-md">
-                    <div class="bg-slate-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                        <div class="sm:flex sm:items-start">
-                            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-500/20 sm:mx-0 sm:h-10 sm:w-10">
-                                <i class="fa-solid fa-file-invoice-dollar text-indigo-400"></i>
-                            </div>
-                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                                <h3 class="text-lg font-semibold leading-6 text-white" id="modal-title">Tambah Data</h3>
-                                <div class="mt-5 space-y-4">
-                                    <div id="div-input-pemilik">
-                                        <label class="block text-sm font-medium text-slate-400 mb-1">Sumber Uang <span class="text-rose-500">*</span></label>
-                                        <select id="input-pemilik" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500">
-                                            <option value="saya">Gaji Saya</option>
-                                            <option value="pasangan">Gaji Pasangan</option>
-                                        </select>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-slate-400 mb-1">Tahun <span class="text-rose-500">*</span></label>
-                                            <input type="number" id="input-tahun" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500" placeholder="2026">
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-slate-400 mb-1">Bulan <span class="text-rose-500">*</span></label>
-                                            <select id="input-bulan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500">
-                                                <option value="Januari">Januari</option><option value="Februari">Februari</option>
-                                                <option value="Maret">Maret</option><option value="April">April</option>
-                                                <option value="Mei">Mei</option><option value="Juni">Juni</option>
-                                                <option value="Juli">Juli</option><option value="Agustus">Agustus</option>
-                                                <option value="September">September</option><option value="Oktober">Oktober</option>
-                                                <option value="November">November</option><option value="Desember">Desember</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="border-t border-slate-700 pt-3 mt-2">
-                                        <p class="text-xs text-indigo-400 font-semibold mb-2">ARUS MASUK (INCOME)</p>
-                                        <div class="space-y-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-slate-400 mb-1">Gaji Pokok (Rp) <span class="text-rose-500">*</span></label>
-                                                <input type="number" id="input-gaji-pokok" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm" placeholder="0">
-                                            </div>
-                                            <div class="grid grid-cols-2 gap-3">
-                                                <div><label class="block text-xs font-medium text-slate-400 mb-1">Tunjangan (Opsional)</label><input type="number" id="input-tunjangan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm" placeholder="0"></div>
-                                                <div><label class="block text-xs font-medium text-slate-400 mb-1">Bonus/THR (Opsional)</label><input type="number" id="input-bonus" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm" placeholder="0"></div>
-                                            </div>
-                                        </div>
-                                    </div>
+    <button id="fab-add" onclick="window.openFormModal('add')" class="fixed bottom-24 right-6 w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-[0_8px_25px_rgba(99,102,241,0.5)] flex items-center justify-center text-white text-2xl active:scale-90 transition-all duration-300 z-40 border border-white/20">
+        <i class="fa-solid fa-plus"></i>
+    </button>
 
-                                    <div class="border-t border-slate-700 pt-3">
-                                        <p class="text-xs text-rose-400 font-semibold mb-2">ARUS KELUAR (EXPENSES)</p>
-                                        <div class="space-y-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-slate-400 mb-1">Total Pengeluaran Bulan Ini (Rp)</label>
-                                                <input type="number" id="input-pengeluaran" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm border-l-2 border-l-rose-500" placeholder="Semua belanja, tagihan, dll">
-                                                <p class="text-[10px] text-slate-500 mt-1">Kosongkan jika Anda belum merekap pengeluaran.</p>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-slate-400 mb-1">Potongan Gaji Langsung (Opsional)</label>
-                                                <input type="number" id="input-potongan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-white text-sm" placeholder="BPJS, Koperasi, dll">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+    <nav class="fixed bottom-0 w-full glass-nav flex justify-around items-center h-20 pb-[var(--sab)] z-30 px-2">
+        <button onclick="window.switchTab('home')" id="tab-home" class="flex flex-col items-center justify-center gap-1.5 w-20 h-full text-indigo-400 active:scale-90 transition-transform">
+            <div class="p-1.5 rounded-xl bg-indigo-500/10 text-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.2)]" id="icon-bg-home"><i class="fa-solid fa-house text-xl"></i></div>
+            <span class="text-[10px] font-bold">Beranda</span>
+        </button>
+        <button onclick="window.switchTab('history')" id="tab-history" class="flex flex-col items-center justify-center gap-1.5 w-20 h-full text-slate-500 hover:text-slate-300 active:scale-90 transition-transform">
+            <div class="p-1.5 rounded-xl bg-transparent text-slate-500" id="icon-bg-history"><i class="fa-solid fa-clock-rotate-left text-xl"></i></div>
+            <span class="text-[10px] font-bold">Riwayat</span>
+        </button>
+        <button onclick="window.switchTab('tools')" id="tab-tools" class="flex flex-col items-center justify-center gap-1.5 w-20 h-full text-slate-500 hover:text-slate-300 active:scale-90 transition-transform">
+            <div class="p-1.5 rounded-xl bg-transparent text-slate-500" id="icon-bg-tools"><i class="fa-solid fa-toolbox text-xl"></i></div>
+            <span class="text-[10px] font-bold">Alat</span>
+        </button>
+    </nav>
+
+    <!-- Form Add/Edit Modal -->
+    <div id="modal-form-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] modal-overlay" onclick="window.closeFormModal()"></div>
+    <div id="modal-form-sheet" class="fixed bottom-0 left-0 right-0 w-full max-h-[92vh] bg-[#0A0F1C] rounded-t-[2rem] border-t border-white/10 flex flex-col z-[101] bottom-sheet-container shadow-[0_-10px_40px_rgba(0,0,0,0.8)] pb-[var(--sab)]">
+        <div class="w-full flex justify-center py-5" id="form-drag-handle"><div class="drag-handle"></div></div>
+        
+        <div class="px-6 pb-4 overflow-y-auto flex-1">
+            <h3 class="text-2xl font-extrabold text-white mb-6 tracking-tight" id="modal-title">Tambah Data</h3>
+            
+            <div class="space-y-5">
+                <div id="div-input-pemilik">
+                    <label class="block text-xs font-bold text-slate-400 mb-2">Sumber Gaji <span class="text-rose-500">*</span></label>
+                    <div class="relative">
+                        <select id="input-pemilik" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white text-sm focus:border-indigo-500 focus:bg-white/10 appearance-none transition-all outline-none">
+                            <option value="saya" class="bg-slate-900">Gaji Saya</option><option value="pasangan" class="bg-slate-900">Gaji Pasangan</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-5 top-[18px] text-slate-500 text-xs pointer-events-none"></i>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-2">Tahun <span class="text-rose-500">*</span></label>
+                        <input type="number" id="input-tahun" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white text-sm focus:border-indigo-500 focus:bg-white/10 transition-all outline-none" placeholder="Cth: 2026">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-2">Bulan <span class="text-rose-500">*</span></label>
+                        <div class="relative">
+                            <select id="input-bulan" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white text-sm focus:border-indigo-500 focus:bg-white/10 appearance-none transition-all outline-none">
+                                <option value="Januari" class="bg-slate-900">Januari</option><option value="Februari" class="bg-slate-900">Februari</option><option value="Maret" class="bg-slate-900">Maret</option>
+                                <option value="April" class="bg-slate-900">April</option><option value="Mei" class="bg-slate-900">Mei</option><option value="Juni" class="bg-slate-900">Juni</option>
+                                <option value="Juli" class="bg-slate-900">Juli</option><option value="Agustus" class="bg-slate-900">Agustus</option><option value="September" class="bg-slate-900">September</option>
+                                <option value="Oktober" class="bg-slate-900">Oktober</option><option value="November" class="bg-slate-900">November</option><option value="Desember" class="bg-slate-900">Desember</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-5 top-[18px] text-slate-500 text-xs pointer-events-none"></i>
                         </div>
                     </div>
-                    <div class="bg-slate-900/80 border-t border-slate-700 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" onclick="window.saveFormData()" class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto">Simpan Data</button>
-                        <button type="button" onclick="window.closeFormModal()" class="mt-3 inline-flex w-full justify-center rounded-lg bg-transparent px-4 py-2 text-sm font-semibold text-slate-400 border border-slate-600 hover:text-white sm:mt-0 sm:w-auto">Batal</button>
+                </div>
+                
+                <div class="bg-indigo-500/5 p-5 rounded-3xl border border-indigo-500/10">
+                    <p class="text-[10px] font-bold text-indigo-400 tracking-widest mb-4 flex items-center gap-2"><i class="fa-solid fa-arrow-turn-down"></i> UANG MASUK</p>
+                    <div class="space-y-4">
+                        <div><label class="block text-xs font-medium text-slate-300 mb-2">Gaji Pokok (Rp) <span class="text-rose-500">*</span></label><input type="number" id="input-gaji-pokok" class="w-full bg-black/20 border border-white/5 rounded-2xl px-5 py-4 text-white text-sm focus:border-indigo-500 placeholder-slate-600 outline-none transition-all" placeholder="Contoh: 5000000"></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-xs font-medium text-slate-400 mb-2">Tunjangan</label><input type="number" id="input-tunjangan" class="w-full bg-black/20 border border-white/5 rounded-2xl px-4 py-4 text-white text-sm focus:border-indigo-500 placeholder-slate-600 outline-none transition-all" placeholder="0"></div>
+                            <div><label class="block text-xs font-medium text-slate-400 mb-2">Bonus/THR</label><input type="number" id="input-bonus" class="w-full bg-black/20 border border-white/5 rounded-2xl px-4 py-4 text-white text-sm focus:border-indigo-500 placeholder-slate-600 outline-none transition-all" placeholder="0"></div>
+                        </div>
                     </div>
                 </div>
+
+                <div class="bg-rose-500/5 p-5 rounded-3xl border border-rose-500/10">
+                    <p class="text-[10px] font-bold text-rose-400 tracking-widest mb-4 flex items-center gap-2"><i class="fa-solid fa-arrow-turn-up"></i> UANG KELUAR</p>
+                    <div class="space-y-4">
+                        <div><label class="block text-xs font-medium text-slate-300 mb-2">Potongan (Pajak, BPJS, dll)</label><input type="number" id="input-potongan" class="w-full bg-black/20 border border-white/5 rounded-2xl px-5 py-4 text-white text-sm focus:border-rose-500 placeholder-slate-600 outline-none transition-all" placeholder="0"></div>
+                        <div><label class="block text-xs font-medium text-slate-300 mb-2">Total Pengeluaran Bulan Ini</label><input type="number" id="input-pengeluaran" class="w-full bg-black/20 border border-white/5 border-l-2 border-l-rose-500 rounded-2xl px-5 py-4 text-white text-sm focus:border-rose-500 placeholder-slate-600 outline-none transition-all" placeholder="Belanja, tagihan, dll"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-2">Catatan Tambahan (Opsional)</label>
+                    <textarea id="input-catatan" rows="2" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white text-sm focus:border-indigo-500 placeholder-slate-600 resize-none outline-none transition-all" placeholder="Misal: THR Idul Fitri cair"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="p-5 border-t border-white/5 bg-[#0A0F1C]/90 backdrop-blur-md">
+            <button onclick="window.saveFormData()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold py-4 rounded-2xl active:scale-95 transition-all shadow-[0_4px_20px_rgba(99,102,241,0.4)]">Simpan Data</button>
+        </div>
+    </div>
+
+    <!-- Settings Menu -->
+    <div id="modal-settings-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] modal-overlay" onclick="window.closeSettings()"></div>
+    <div id="modal-settings-sheet" class="fixed bottom-0 left-0 right-0 w-full bg-[#0A0F1C] rounded-t-[2rem] border-t border-white/10 flex flex-col z-[101] bottom-sheet-container pb-[var(--sab)] shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+        <div class="w-full flex justify-center py-5" id="settings-drag-handle"><div class="drag-handle"></div></div>
+        <div class="px-6 pb-8">
+            <div class="flex items-center gap-4 mb-8">
+                <img src="https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&rounded=xl&bold=true" class="w-14 h-14 rounded-2xl border-2 border-white/10 shadow-lg">
+                <div>
+                    <h3 class="text-xl font-extrabold text-white tracking-tight">Pengaturan</h3>
+                    <p class="text-xs text-slate-400 mt-1">Kelola data & keamanan Anda</p>
+                </div>
+            </div>
+            
+            <div class="space-y-3">
+                <button onclick="window.triggerSetPin()" class="w-full flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 active:scale-95 transition-transform hover:bg-white/10">
+                    <div class="flex items-center gap-4"><div class="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center"><i class="fa-solid fa-lock text-indigo-400 text-xs"></i></div><span class="text-sm font-semibold text-white">Ubah PIN Keamanan</span></div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+                </button>
+                <button onclick="window.downloadCSV()" class="w-full flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 active:scale-95 transition-transform hover:bg-white/10">
+                    <div class="flex items-center gap-4"><div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center"><i class="fa-solid fa-download text-emerald-400 text-xs"></i></div><span class="text-sm font-semibold text-white">Export Data (CSV)</span></div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+                </button>
+                <button onclick="window.openImportModal()" class="w-full flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 active:scale-95 transition-transform hover:bg-white/10">
+                    <div class="flex items-center gap-4"><div class="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center"><i class="fa-solid fa-upload text-blue-400 text-xs"></i></div><span class="text-sm font-semibold text-white">Import Data (CSV)</span></div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i>
+                </button>
+                <button onclick="window.resetPinWarning()" class="w-full flex items-center justify-between p-4 bg-rose-500/10 rounded-2xl border border-rose-500/20 active:scale-95 transition-transform mt-6">
+                    <div class="flex items-center gap-4"><div class="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center"><i class="fa-solid fa-power-off text-rose-400 text-xs"></i></div><span class="text-sm font-bold text-rose-400">Reset Semua Data</span></div>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Modals lainnya (Delete, Import, Calc) sama dengan sebelumnya, hanya diinjeksi via JS -->
-    <div id="delete-modal" class="fixed inset-0 z-[100] hidden">
-        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="window.closeDeleteModal()"></div>
-        <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
-            <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-xl w-full max-w-sm p-6 text-center">
-                <i class="fa-solid fa-triangle-exclamation text-rose-400 text-4xl mb-4"></i>
-                <h3 class="text-lg font-bold text-white">Hapus Data</h3>
-                <p class="text-sm text-slate-400 mt-2">Yakin menghapus data <span id="delete-info" class="font-bold text-white"></span>?</p>
-                <div class="mt-6 flex justify-center gap-3">
-                    <button onclick="window.closeDeleteModal()" class="px-4 py-2 bg-transparent text-slate-400 border border-slate-600 rounded-lg hover:text-white">Batal</button>
-                    <button onclick="window.executeDelete()" class="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-500">Hapus</button>
-                </div>
+    <!-- Import Modal -->
+    <div id="modal-import-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[110] modal-overlay" onclick="window.closeImportModal()"></div>
+    <div id="modal-import-sheet" class="fixed bottom-0 left-0 right-0 w-full bg-[#0A0F1C] rounded-t-[2rem] border-t border-white/10 flex flex-col z-[111] bottom-sheet-container pb-[var(--sab)] shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+        <div class="w-full flex justify-center py-5" id="import-drag-handle"><div class="drag-handle"></div></div>
+        <div class="px-6 pb-8">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="bg-blue-500/20 w-12 h-12 rounded-2xl flex items-center justify-center border border-blue-500/20"><i class="fa-solid fa-file-import text-blue-400 text-lg"></i></div>
+                <h3 class="text-xl font-extrabold text-white tracking-tight">Import Data</h3>
             </div>
+            <p class="text-xs text-slate-400 mb-6">Pilih file .csv hasil export dari aplikasi ini sebelumnya.</p>
+            <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-36 border-2 border-white/10 border-dashed rounded-3xl cursor-pointer bg-white/5 active:bg-white/10 transition-colors">
+                <i class="fa-solid fa-cloud-arrow-up text-4xl text-indigo-400 mb-3 drop-shadow-[0_0_10px_rgba(99,102,241,0.5)]"></i>
+                <p class="text-sm text-slate-200 font-bold">Ketuk untuk pilih file</p>
+                <input id="dropzone-file" type="file" accept=".csv" class="hidden" onchange="window.handleFileSelect(event)" />
+            </label>
         </div>
     </div>
 
-    <div id="import-modal" class="fixed inset-0 z-[100] hidden">
-        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="window.closeImportModal()"></div>
-        <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
-            <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-xl w-full max-w-md p-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="bg-emerald-500/20 p-3 rounded-full"><i class="fa-solid fa-file-import text-emerald-400"></i></div>
-                    <h3 class="text-lg font-bold text-white">Import Data (CSV)</h3>
-                </div>
-                <p class="text-sm text-slate-400 mb-4">Unggah file CSV yang telah didownload sebelumnya untuk memulihkan data massal.</p>
-                <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-600 border-dashed rounded-lg cursor-pointer bg-slate-700/20 hover:bg-slate-700/50 transition-colors group">
-                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 mb-2 group-hover:text-emerald-400"></i>
-                    <p class="mb-1 text-sm text-slate-300">Klik untuk pilih file .csv</p>
-                    <input id="dropzone-file" type="file" accept=".csv" class="hidden" onchange="window.handleFileSelect(event)" />
-                </label>
-                <div class="mt-6 text-right">
-                    <button onclick="window.closeImportModal()" class="px-4 py-2 text-sm text-slate-400 border border-slate-600 rounded-lg">Tutup</button>
-                </div>
+    <!-- Delete Confirm Modal -->
+    <div id="delete-modal" class="fixed inset-0 z-[120] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-md" onclick="window.closeDeleteModal()"></div>
+        <div class="relative bg-[#0A0F1C] border border-white/10 rounded-3xl p-6 w-full max-w-[300px] text-center fade-in shadow-2xl">
+            <div class="w-16 h-16 bg-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-5 border border-rose-500/20"><i class="fa-solid fa-trash-can text-rose-400 text-2xl"></i></div>
+            <h3 class="text-xl font-extrabold text-white mb-2">Hapus Data?</h3>
+            <p class="text-sm text-slate-400 mb-6 leading-relaxed">Tindakan ini akan menghapus data <span id="delete-info" class="font-bold text-white block mt-1"></span></p>
+            <div class="flex gap-3">
+                <button onclick="window.closeDeleteModal()" class="flex-1 py-3 bg-white/5 rounded-xl text-sm font-bold text-white active:scale-95 transition-transform border border-white/10">Batal</button>
+                <button onclick="window.executeDelete()" class="flex-1 py-3 bg-rose-600 rounded-xl text-sm font-bold text-white active:scale-95 transition-transform shadow-[0_4px_15px_rgba(225,29,72,0.4)]">Hapus</button>
             </div>
         </div>
     </div>
 
     <div id="calc-modal-container"></div>
-    <div id="toast-container" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
-
-    <footer class="border-t border-slate-800 py-8 bg-slate-900 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <p class="text-slate-500 text-sm">&copy; <span id="current-year"></span> SalaryDash PRO. Data tersimpan di memori perangkat Anda.</p>
-        </div>
-    </footer>
+    <div id="toast-container" class="fixed top-auto bottom-24 left-0 right-0 z-[9999] flex flex-col items-center gap-2 pointer-events-none px-4"></div>
 
     <script>
-        // --- Setup PWA Dinamis ---
+        // Haptic & PWA Setup 
+        const haptic = () => { if (navigator.vibrate) navigator.vibrate(15); };
+        const hapticSuccess = () => { if (navigator.vibrate) navigator.vibrate([15, 50, 15]); };
+        const hapticError = () => { if (navigator.vibrate) navigator.vibrate([30, 50, 30, 50, 30]); };
+
         (function setupPWA() {
-            const manifest = {
-                "name": "SalaryDash Pro",
-                "short_name": "SalaryDash",
-                "start_url": ".",
-                "display": "standalone",
-                "background_color": "#0f172a",
-                "theme_color": "#0f172a",
-                "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/3135/3135715.png", "sizes": "512x512", "type": "image/png"}]
+            const manifest = { 
+                "name": "SalaryDash Pro", "short_name": "SalaryDash", 
+                "start_url": ".", "display": "standalone", 
+                "background_color": "#05050A", "theme_color": "#05050A", 
+                "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/3135/3135715.png", "sizes": "512x512", "type": "image/png"}] 
             };
-            const blob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
-            document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(blob));
+            const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+            document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(manifestBlob));
+
+            const swCode = `
+                self.addEventListener('install', e => self.skipWaiting());
+                self.addEventListener('activate', e => self.clients.claim());
+                self.addEventListener('fetch', e => { e.respondWith(fetch(e.request).catch(() => new Response('Offline'))); });
+            `;
+            const swBlob = new Blob([swCode], { type: 'application/javascript' });
+            if ('serviceWorker' in navigator) navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(console.error);
         })();
 
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-
-        // State Global
+        // State variables
         window.rawData = JSON.parse(localStorage.getItem('salarydash_data_v2')) || [];
         window.currentTahun = new Date().getFullYear().toString();
         window.currentPemilik = 'saya'; 
         window.mainChartType = 'bar';
         window.chartInstance = null;
         window.compChartInstance = null;
-        window.isBlurred = false; // Mode Sensor
+        window.isBlurred = false;
         
-        // --- Sistem Keamanan PIN ---
         let systemPin = localStorage.getItem('salarydash_pin');
-        let tempPin = '';
-        let isSettingNewPin = !systemPin;
-        let confirmPhase = false;
-        let firstPin = '';
+        let tempPin = ''; let isSettingNewPin = !systemPin; let confirmPhase = false; let firstPin = '';
 
         function updatePinDots() {
             const dots = document.querySelectorAll('.pin-dot');
             dots.forEach((dot, index) => {
-                if(index < tempPin.length) dot.classList.add('active', 'bg-indigo-500');
-                else dot.classList.remove('active', 'bg-indigo-500');
+                if(index < tempPin.length) dot.classList.add('active');
+                else dot.classList.remove('active');
             });
         }
 
         window.pressPin = function(num) {
+            haptic();
             if(tempPin.length < 4) {
-                tempPin += num;
-                updatePinDots();
-                if(tempPin.length === 4) setTimeout(checkPinLogic, 200);
+                tempPin += num; updatePinDots();
+                if(tempPin.length === 4) setTimeout(checkPinLogic, 150);
             }
         };
 
-        window.deletePin = function() {
-            if(tempPin.length > 0) {
-                tempPin = tempPin.slice(0, -1);
-                updatePinDots();
-            }
-        };
+        window.deletePin = function() { haptic(); if(tempPin.length > 0) { tempPin = tempPin.slice(0, -1); updatePinDots(); } };
 
         function triggerPinError() {
-            const container = document.getElementById('pin-dots');
-            container.classList.add('shake');
-            setTimeout(() => container.classList.remove('shake'), 400);
-            tempPin = '';
-            updatePinDots();
+            hapticError(); const container = document.getElementById('pin-dots');
+            container.classList.add('shake'); setTimeout(() => container.classList.remove('shake'), 400);
+            tempPin = ''; updatePinDots();
         }
 
         function checkPinLogic() {
-            const title = document.getElementById('pin-title');
-            const sub = document.getElementById('pin-subtitle');
-            
+            const title = document.getElementById('pin-title'); const sub = document.getElementById('pin-subtitle');
             if(isSettingNewPin) {
                 if(!confirmPhase) {
-                    firstPin = tempPin;
-                    tempPin = '';
-                    confirmPhase = true;
-                    title.innerText = "Konfirmasi PIN";
-                    sub.innerText = "Masukkan ulang 4 digit PIN yang sama";
-                    updatePinDots();
+                    firstPin = tempPin; tempPin = ''; confirmPhase = true;
+                    title.innerText = "Konfirmasi PIN"; sub.innerText = "Masukkan ulang 4 digit PIN yang sama"; updatePinDots();
                 } else {
-                    if(tempPin === firstPin) {
-                        localStorage.setItem('salarydash_pin', tempPin);
-                        systemPin = tempPin;
-                        unlockApp();
-                    } else {
-                        triggerPinError();
-                        sub.innerText = "PIN tidak cocok. Ulangi masukkan PIN konfirmasi.";
-                    }
+                    if(tempPin === firstPin) { localStorage.setItem('salarydash_pin', tempPin); systemPin = tempPin; hapticSuccess(); unlockApp(); } 
+                    else { triggerPinError(); sub.innerText = "PIN tidak cocok. Ulangi konfirmasi."; }
                 }
             } else {
-                if(tempPin === systemPin) {
-                    unlockApp();
-                } else {
-                    triggerPinError();
-                    sub.innerText = "PIN Salah. Silakan coba lagi.";
-                }
+                if(tempPin === systemPin) { hapticSuccess(); unlockApp(); } else { triggerPinError(); sub.innerText = "PIN Salah. Silakan coba lagi."; }
             }
         }
 
         function unlockApp() {
-            const screen = document.getElementById('pin-screen');
-            screen.style.opacity = '0';
+            const screen = document.getElementById('pin-screen'); screen.style.opacity = '0';
             setTimeout(() => { screen.classList.add('hidden'); }, 500);
-            
-            window.showToast(isSettingNewPin ? 'PIN berhasil dibuat & Aplikasi Terbuka' : 'Akses Terbuka', 'success');
-            window.updateYearDropdown();
-            window.renderDashboard();
+            window.showToast(isSettingNewPin ? 'PIN berhasil dibuat' : 'Akses Terbuka', 'success');
+            window.updateYearDropdown(); window.renderDashboard();
         }
+
+        window.triggerSetPin = function() {
+            haptic(); window.closeSettings();
+            systemPin = null; isSettingNewPin = true; confirmPhase = false; tempPin = ''; firstPin = '';
+            document.getElementById('pin-title').innerText = "Buat PIN Baru"; document.getElementById('pin-subtitle').innerText = "Amankan data dengan 4 digit angka";
+            updatePinDots(); const screen = document.getElementById('pin-screen'); screen.classList.remove('hidden');
+            setTimeout(() => screen.style.opacity = '1', 10);
+        }
+
+        if(isSettingNewPin) { document.getElementById('pin-title').innerText = "Buat PIN Baru"; document.getElementById('pin-subtitle').innerText = "Amankan data dengan 4 digit angka"; } 
+        else { document.getElementById('pin-title').innerText = "Masukkan PIN"; document.getElementById('pin-subtitle').innerText = "Aplikasi terkunci"; }
 
         window.resetPinWarning = function() {
-            if(confirm("PERINGATAN! Mereset PIN akan MENGHAPUS SEMUA DATA GAJI di perangkat ini untuk menjaga privasi. Apakah Anda yakin ingin mereset keseluruhan aplikasi?")) {
-                localStorage.removeItem('salarydash_pin');
-                localStorage.removeItem('salarydash_data_v2');
-                location.reload();
+            hapticError();
+            if(confirm("PERINGATAN! Tindakan ini akan MENGHAPUS SEMUA DATA GAJI secara permanen. Anda yakin?")) {
+                localStorage.removeItem('salarydash_pin'); localStorage.removeItem('salarydash_data_v2'); location.reload();
             }
         };
 
-        // Inisialisasi Layar Kunci
-        if(isSettingNewPin) {
-            document.getElementById('pin-title').innerText = "Buat PIN Baru";
-            document.getElementById('pin-subtitle').innerText = "Amankan data keuangan Anda dengan 4 digit angka";
-        } else {
-            document.getElementById('pin-title').innerText = "Masukkan PIN";
-            document.getElementById('pin-subtitle').innerText = "Aplikasi terkunci untuk menjaga privasi Anda";
+        const toggleFab = (show) => {
+            const fab = document.getElementById('fab-add');
+            if(show) { fab.style.transform = 'scale(1)'; fab.style.opacity = '1'; fab.style.pointerEvents = 'auto'; } 
+            else { fab.style.transform = 'scale(0)'; fab.style.opacity = '0'; fab.style.pointerEvents = 'none'; }
         }
 
-        // --- Fitur Sensor Layar (Blur) ---
+        window.switchTab = function(tabName) {
+            haptic();
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-history').classList.add('hidden');
+            document.getElementById('view-tools').classList.add('hidden');
+            
+            ['home', 'history', 'tools'].forEach(tab => {
+                document.getElementById(`tab-${tab}`).className = "flex flex-col items-center justify-center gap-1.5 w-20 h-full text-slate-500 transition-transform active:scale-90";
+                document.getElementById(`icon-bg-${tab}`).className = "p-1.5 rounded-xl bg-transparent text-slate-500 transition-all";
+            });
+            
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).classList.remove('text-slate-500');
+            document.getElementById(`tab-${tabName}`).classList.add('text-indigo-400');
+            
+            // Highlight icon background
+            document.getElementById(`icon-bg-${tabName}`).className = "p-1.5 rounded-xl bg-indigo-500/10 text-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.2)] transition-all";
+
+            if(tabName === 'home') {
+                if(window.chartInstance) window.chartInstance.resize();
+                if(window.compChartInstance) window.compChartInstance.resize();
+            }
+            toggleFab(tabName !== 'tools'); document.getElementById('main-content').scrollTop = 0;
+        };
+
         window.toggleBlur = function() {
-            window.isBlurred = !window.isBlurred;
-            const icon = document.getElementById('blur-icon');
-            if(window.isBlurred) {
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash', 'text-rose-400');
-                window.showToast('Mode Privasi Aktif', 'success');
-            } else {
-                icon.classList.remove('fa-eye-slash', 'text-rose-400');
-                icon.classList.add('fa-eye');
+            haptic(); window.isBlurred = !window.isBlurred;
+            const icon = document.getElementById('blur-icon'); const texts = document.querySelectorAll('.money-text');
+            if(window.isBlurred) { 
+                icon.classList.replace('fa-eye', 'fa-eye-slash'); icon.classList.add('text-rose-400'); 
+                texts.forEach(t => t.classList.add('is-blurred')); window.showToast('Sensor Aktif', 'success'); 
+            } else { 
+                icon.classList.replace('fa-eye-slash', 'fa-eye'); icon.classList.remove('text-rose-400'); 
+                texts.forEach(t => t.classList.remove('is-blurred'));
             }
-            window.renderDashboard(); 
+            window.renderChartsOnly();
         };
 
-        // Modifikasi format Rupiah agar mendukung Mode Blur
-        const formatRp = (num) => {
-            if (window.isBlurred) return 'Rp ••••••••';
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0);
-        };
+        const formatRp = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0);
 
-        // --- Logika Inti ---
-        const monthOrder = {
-            'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4, 'Mei': 5, 'Juni': 6,
-            'Juli': 7, 'Agustus': 8, 'September': 9, 'Oktober': 10, 'November': 11, 'Desember': 12
-        };
-
-        function saveDataLocal() {
-            localStorage.setItem('salarydash_data_v2', JSON.stringify(window.rawData));
+        // Bottom Sheet Logic with Swipe Gesture
+        function openSheet(overlayId, sheetId) {
+            haptic(); toggleFab(false);
+            const overlay = document.getElementById(overlayId); const sheet = document.getElementById(sheetId);
+            overlay.classList.add('open'); sheet.classList.add('open');
+            setupSwipeToClose(sheet, () => closeSheet(overlayId, sheetId));
         }
+        function closeSheet(overlayId, sheetId) {
+            haptic(); const overlay = document.getElementById(overlayId); const sheet = document.getElementById(sheetId);
+            overlay.classList.remove('open'); sheet.classList.remove('open');
+            const isTools = !document.getElementById('view-tools').classList.contains('hidden');
+            if(!isTools) setTimeout(() => toggleFab(true), 300);
+        }
+
+        window.openSettings = () => openSheet('modal-settings-overlay', 'modal-settings-sheet');
+        window.closeSettings = () => closeSheet('modal-settings-overlay', 'modal-settings-sheet');
+        window.openImportModal = () => { window.closeSettings(); setTimeout(() => openSheet('modal-import-overlay', 'modal-import-sheet'), 300); };
+        window.closeImportModal = () => { document.getElementById('dropzone-file').value=''; closeSheet('modal-import-overlay', 'modal-import-sheet'); };
+
+        function setupSwipeToClose(sheetElement, closeFunction) {
+            let startY = 0; let currentY = 0; let isDragging = false;
+            const handle = sheetElement.querySelector('.drag-handle').parentElement;
+            const onTouchStart = (e) => { startY = e.touches[0].clientY; isDragging = true; sheetElement.style.transition = 'none'; };
+            const onTouchMove = (e) => {
+                if (!isDragging) return; currentY = e.touches[0].clientY; const diff = currentY - startY;
+                if (diff > 0) sheetElement.style.transform = `translateY(${diff}px)`;
+            };
+            const onTouchEnd = () => {
+                if (!isDragging) return; isDragging = false;
+                sheetElement.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+                if (currentY - startY > 100) { closeFunction(); setTimeout(() => sheetElement.style.transform = '', 300); } 
+                else sheetElement.style.transform = '';
+            };
+            handle.onpointerdown = null; 
+            handle.addEventListener('touchstart', onTouchStart, {passive: true});
+            handle.addEventListener('touchmove', onTouchMove, {passive: true});
+            handle.addEventListener('touchend', onTouchEnd);
+        }
+
+        function saveDataLocal() { localStorage.setItem('salarydash_data_v2', JSON.stringify(window.rawData)); }
 
         window.updateYearDropdown = function() {
             const select = document.getElementById('tahunSelect');
             const yearsSet = new Set([new Date().getFullYear().toString()]);
             window.rawData.forEach(item => yearsSet.add(item.tahun_asal));
-            
-            const sortedYears = Array.from(yearsSet).sort((a,b) => b - a);
-            let optionsHtml = '<option value="semua">Semua Tahun</option>';
-            sortedYears.forEach(y => { optionsHtml += `<option value="${y}" ${y === window.currentTahun ? 'selected' : ''}>Tahun ${y}</option>`; });
-            select.innerHTML = optionsHtml;
-            select.value = window.currentTahun;
+            const sorted = Array.from(yearsSet).sort((a,b) => b - a);
+            let html = '<option value="semua" class="bg-slate-900">Semua Tahun</option>';
+            sorted.forEach(y => { html += `<option value="${y}" class="bg-slate-900" ${y === window.currentTahun ? 'selected' : ''}>${y}</option>`; });
+            select.innerHTML = html; select.value = window.currentTahun;
         };
 
-        window.handleFilterChange = function() {
-            window.currentPemilik = document.getElementById('pemilikFilter').value;
-            window.currentTahun = document.getElementById('tahunSelect').value;
-            window.renderDashboard();
-        };
+        window.handleFilterChange = function() { haptic(); window.currentPemilik = document.getElementById('pemilikFilter').value; window.currentTahun = document.getElementById('tahunSelect').value; window.renderDashboard(); };
+
+        const monthOrder = { 'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4, 'Mei': 5, 'Juni': 6, 'Juli': 7, 'Agustus': 8, 'September': 9, 'Oktober': 10, 'November': 11, 'Desember': 12 };
 
         window.getProcessedData = function() {
             let filtered = window.rawData;
             if (window.currentTahun !== 'semua') filtered = filtered.filter(item => item.tahun_asal === window.currentTahun);
-
             let processed = [];
             if (window.currentPemilik === 'gabungan') {
                 let map = {};
                 filtered.forEach(item => {
                     let key = `${item.tahun_asal}-${item.bulan}`;
-                    if (!map[key]) {
-                        map[key] = {
-                            tahun_asal: item.tahun_asal, bulan: item.bulan, pemilik: 'gabungan',
-                            gajiPokok: 0, tunjangan: 0, bonus: 0, potongan: 0, pengeluaran: 0
-                        };
-                    }
+                    if (!map[key]) map[key] = { tahun_asal: item.tahun_asal, bulan: item.bulan, pemilik: 'gabungan', gajiPokok: 0, tunjangan: 0, bonus: 0, potongan: 0, pengeluaran: 0, catatan: '' };
                     map[key].gajiPokok += (item.gajiPokok || 0); map[key].tunjangan += (item.tunjangan || 0);
-                    map[key].bonus += (item.bonus || 0); map[key].potongan += (item.potongan || 0);
-                    map[key].pengeluaran += (item.pengeluaran || 0);
+                    map[key].bonus += (item.bonus || 0); map[key].potongan += (item.potongan || 0); map[key].pengeluaran += (item.pengeluaran || 0);
                 });
                 processed = Object.values(map);
-            } else {
-                processed = filtered.filter(item => item.pemilik === window.currentPemilik);
-            }
+            } else { processed = filtered.filter(item => item.pemilik === window.currentPemilik); }
             
             processed.sort((a, b) => {
                 if (a.tahun_asal !== b.tahun_asal) return parseInt(a.tahun_asal) - parseInt(b.tahun_asal);
@@ -612,215 +615,201 @@
             return processed;
         };
 
+        let currentChartLabels = [], currentChartTHP = [], currentChartSisa = [], currentChartComp = [];
+
         window.renderDashboard = function() {
-            if(isSettingNewPin && !systemPin) return; // Jangan render jika masih set pin pertama
+            if(isSettingNewPin && !systemPin) return;
 
             const dataToDisplay = window.getProcessedData();
-            let pName = window.currentPemilik === 'saya' ? 'Anda' : (window.currentPemilik === 'pasangan' ? 'Pasangan Anda' : 'Keluarga Anda');
-            document.getElementById('table-subtitle').innerText = `Kelola dan catat arus kas ${pName}`;
-            
-            let sumBersih = 0, sumPengeluaran = 0, sumSisa = 0;
-            let sumPokok = 0, sumTunjangan = 0, sumBonus = 0, sumPotongan = 0;
-            const labels = [], dataBersihChart = [], dataSisaChart = [];
-            let htmlRows = '';
+            let sumBersih = 0, sumPengeluaran = 0, sumSisa = 0, sumPokok = 0, sumTunjangan = 0, sumBonus = 0;
+            currentChartLabels = []; currentChartTHP = []; currentChartSisa = []; let htmlList = '';
 
-            dataToDisplay.forEach(item => {
-                const totalMasuk = item.gajiPokok + item.tunjangan + item.bonus;
-                const thp = totalMasuk - item.potongan;
-                const pengeluaran = item.pengeluaran || 0;
-                const sisa = thp - pengeluaran;
-
+            dataToDisplay.forEach((item) => {
+                const thp = (item.gajiPokok + item.tunjangan + item.bonus) - item.potongan;
+                const pengeluaran = item.pengeluaran || 0; const sisa = thp - pengeluaran;
                 sumBersih += thp; sumPengeluaran += pengeluaran; sumSisa += sisa;
-                sumPokok += item.gajiPokok; sumTunjangan += item.tunjangan;
-                sumBonus += item.bonus; sumPotongan += item.potongan;
+                sumPokok += item.gajiPokok; sumTunjangan += item.tunjangan; sumBonus += item.bonus;
 
                 const labelBulan = item.bulan.substring(0, 3);
-                labels.push(window.currentTahun === 'semua' ? `${labelBulan} '${item.tahun_asal.substring(2)}` : labelBulan);
-                dataBersihChart.push(thp);
-                dataSisaChart.push(sisa);
+                currentChartLabels.push(window.currentTahun === 'semua' ? `${labelBulan} '${item.tahun_asal.substring(2)}` : labelBulan);
+                currentChartTHP.push(thp); currentChartSisa.push(sisa);
 
-                let badgePemilik = '';
-                if(window.currentPemilik === 'gabungan') badgePemilik = `<span class="bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded text-[10px] ml-2 border border-indigo-500/30">Suami+Istri</span>`;
-                else if(window.currentPemilik === 'pasangan') badgePemilik = `<span class="bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded text-[10px] ml-2 border border-pink-500/30">Pasangan</span>`;
+                let badge = window.currentPemilik === 'gabungan' ? 'Keluarga' : (item.pemilik === 'saya' ? 'Saya' : 'Pasangan');
+                let colorBadge = window.currentPemilik === 'gabungan' ? 'bg-indigo-500 text-white' : (item.pemilik === 'saya' ? 'bg-slate-700 text-slate-300' : 'bg-pink-600 text-white');
+                let noteHtml = item.catatan ? `<p class="text-[10px] text-slate-400 mt-2 bg-black/20 p-2.5 rounded-xl border border-white/5"><i class="fa-solid fa-note-sticky mr-1 opacity-50"></i> ${item.catatan}</p>` : '';
 
-                htmlRows += `
-                    <tr class="hover:bg-slate-700/30 transition-colors">
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-200">${item.bulan} ${item.tahun_asal} <br class="sm:hidden">${badgePemilik}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-400 text-right">${formatRp(item.gajiPokok + item.tunjangan)}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-right ${item.bonus > 0 ? 'text-amber-400' : 'text-slate-500'}">${item.bonus > 0 ? formatRp(item.bonus) : '-'}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-right ${item.potongan > 0 ? 'text-rose-400/80' : 'text-slate-500'}">${item.potongan > 0 ? '-' + formatRp(item.potongan) : '-'}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-bold text-indigo-300 text-right border-l border-slate-700">${formatRp(thp)}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-rose-300 text-right">${pengeluaran > 0 ? formatRp(pengeluaran) : '-'}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-bold ${sisa >= 0 ? 'text-emerald-400' : 'text-rose-500'} text-right">${formatRp(sisa)}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-center">
-                            ${window.currentPemilik === 'gabungan' ? '<span class="text-[10px] text-slate-500 italic">Edit di mode individu</span>' : `
-                                <div class="flex justify-center gap-1.5">
-                                    <button onclick="window.openFormModal('edit', '${item.pemilik}', '${item.bulan}', '${item.tahun_asal}')" class="text-slate-400 hover:text-indigo-400 p-1.5 bg-slate-800 rounded"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button onclick="window.confirmDelete('${item.pemilik}', '${item.bulan}', '${item.tahun_asal}')" class="text-slate-400 hover:text-rose-400 p-1.5 bg-slate-800 rounded"><i class="fa-solid fa-trash"></i></button>
+                htmlList = `
+                    <div class="glass-card rounded-3xl p-5 relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-11 h-11 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shadow-inner">
+                                    <i class="fa-regular fa-calendar-check text-indigo-400 text-lg"></i>
                                 </div>
-                            `}
-                        </td>
-                    </tr>
-                `;
+                                <div>
+                                    <h4 class="font-bold text-white text-base tracking-tight">${item.bulan} ${item.tahun_asal}</h4>
+                                    <span class="text-[9px] px-2 py-0.5 rounded-md mt-1 inline-block ${colorBadge}">${badge}</span>
+                                </div>
+                            </div>
+                            ${window.currentPemilik !== 'gabungan' ? `
+                            <div class="flex gap-2">
+                                <button onclick="window.openFormModal('edit', '${item.pemilik}', '${item.bulan}', '${item.tahun_asal}')" class="w-8 h-8 rounded-full bg-white/5 border border-white/10 text-slate-300 flex items-center justify-center active:bg-indigo-500 active:border-indigo-500 active:text-white transition-all"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                <button onclick="window.confirmDelete('${item.pemilik}', '${item.bulan}', '${item.tahun_asal}')" class="w-8 h-8 rounded-full bg-white/5 border border-white/10 text-slate-300 flex items-center justify-center active:bg-rose-600 active:border-rose-600 active:text-white transition-all"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                            </div>` : '<span class="text-[10px] text-slate-500 italic">Edit di profil individu</span>'}
+                        </div>
+                        
+                        <div class="space-y-2.5 pt-4 border-t border-white/10">
+                            <div class="flex justify-between text-xs"><span class="text-slate-400">Pemasukan (THP)</span> <span class="font-bold text-indigo-300 money-text">${formatRp(thp)}</span></div>
+                            <div class="flex justify-between text-xs"><span class="text-slate-400">Pengeluaran</span> <span class="font-medium text-rose-400 money-text">${pengeluaran > 0 ? '-' + formatRp(pengeluaran) : 'Rp 0'}</span></div>
+                            <div class="flex justify-between text-xs pt-3 mt-1 border-t border-white/5 border-dashed">
+                                <span class="text-slate-300 font-bold">Sisa Bersih</span> 
+                                <span class="font-extrabold ${sisa >= 0 ? 'text-emerald-400' : 'text-rose-500'} money-text text-sm">${formatRp(sisa)}</span>
+                            </div>
+                        </div>
+                        ${noteHtml}
+                    </div>
+                ` + htmlList;
             });
 
-            if (dataToDisplay.length === 0) htmlRows = `<tr><td colspan="8" class="px-6 py-12 text-center text-slate-400">Belum ada data dicatat. Klik 'Tambah Data'.</td></tr>`;
+            if (dataToDisplay.length === 0) htmlList = `
+                <div class="text-center py-20 text-slate-500 flex flex-col items-center">
+                    <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-5 border border-white/10 shadow-inner">
+                        <i class="fa-solid fa-folder-open text-4xl opacity-40"></i>
+                    </div>
+                    <p class="text-sm font-bold text-slate-300">Belum ada catatan.</p>
+                    <p class="text-xs mt-1">Ketuk tombol + untuk mulai mencatat.</p>
+                </div>`;
 
             window.averageSalary = dataToDisplay.length > 0 ? sumBersih / dataToDisplay.length : 0;
+            currentChartComp = [sumPokok, sumTunjangan, sumBonus];
             
             document.getElementById('total-gaji').textContent = formatRp(sumBersih);
             document.getElementById('total-pengeluaran').textContent = formatRp(sumPengeluaran);
             document.getElementById('sisa-uang').textContent = formatRp(sumSisa);
             document.getElementById('rata-gaji').textContent = formatRp(window.averageSalary);
+            document.getElementById('history-list').innerHTML = htmlList;
+            
+            if(window.isBlurred) document.querySelectorAll('.money-text').forEach(t => t.classList.add('is-blurred'));
 
-            document.getElementById('table-body').innerHTML = htmlRows;
-            
-            if (dataToDisplay.length > 0) {
-                document.getElementById('table-foot').innerHTML = `
-                    <tr>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-white">TOTAL KESELURUHAN</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold text-slate-300 text-right">${formatRp(sumPokok + sumTunjangan)}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold text-amber-400 text-right">${formatRp(sumBonus)}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold text-rose-500 text-right">-${formatRp(sumPotongan)}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-indigo-400 text-right border-l border-slate-700">${formatRp(sumBersih)}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold text-rose-400 text-right">${formatRp(sumPengeluaran)}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-base font-bold ${sumSisa >= 0 ? 'text-emerald-400' : 'text-rose-500'} text-right">${formatRp(sumSisa)}</td>
-                        <td></td>
-                    </tr>
-                `;
-            } else { document.getElementById('table-foot').innerHTML = ''; }
-            
-            window.renderCharts(labels, dataBersihChart, dataSisaChart, sumPokok, sumTunjangan, sumBonus);
-            window.renderSmartInsights(dataToDisplay);
+            window.renderChartsOnly(); window.renderSmartInsights(dataToDisplay);
         };
 
-        window.renderCharts = function(labels, dataBersih, dataSisa, sumPokok, sumTunjangan, sumBonus) {
+        window.renderChartsOnly = function() {
             const ctx = document.getElementById('mainChart').getContext('2d');
             if (window.chartInstance) window.chartInstance.destroy();
-
-            // Jika mode blur, sembunyikan label di tooltip chart
-            const tooltipFormat = (c) => window.isBlurred ? ' Rp ••••••••' : ' ' + formatRp(c.raw);
+            const tooltipFormat = (c) => window.isBlurred ? ' Terkunci' : ' ' + formatRp(c.raw);
+            const colorTHP = window.mainChartType === 'bar' ? '#818cf8' : 'rgba(129, 140, 248, 0.1)';
+            const borderTHP = '#a5b4fc';
+            const colorSisa = window.mainChartType === 'bar' ? '#34d399' : 'rgba(52, 211, 153, 0.1)';
+            const borderSisa = currentChartSisa.some(v => v < 0) ? '#fb7185' : '#6ee7b7'; 
 
             window.chartInstance = new Chart(ctx, {
                 type: window.mainChartType,
                 data: {
-                    labels: labels.length > 0 ? labels : ['-'],
+                    labels: currentChartLabels.length > 0 ? currentChartLabels : ['-'],
                     datasets: [
-                        {
-                            label: 'Take Home Pay', data: dataBersih.length > 0 ? dataBersih : [0],
-                            backgroundColor: window.mainChartType === 'bar' ? '#6366f1' : 'rgba(99, 102, 241, 0.1)', 
-                            borderColor: '#818cf8', borderWidth: 2, borderRadius: window.mainChartType === 'bar' ? 4 : 0, fill: true, tension: 0.4
-                        },
-                        {
-                            label: 'Sisa Uang (Arus Kas)', data: dataSisa.length > 0 ? dataSisa : [0],
-                            backgroundColor: window.mainChartType === 'bar' ? '#10b981' : 'rgba(16, 185, 129, 0.1)', 
-                            borderColor: '#34d399', borderWidth: 2, borderRadius: window.mainChartType === 'bar' ? 4 : 0, fill: true, tension: 0.4
-                        }
+                        { label: 'THP', data: currentChartTHP.length > 0 ? currentChartTHP : [0], backgroundColor: colorTHP, borderColor: borderTHP, borderWidth: 2, borderRadius: 6, fill: true, tension: 0.4 },
+                        { label: 'Sisa', data: currentChartSisa.length > 0 ? currentChartSisa : [0], backgroundColor: colorSisa, borderColor: borderSisa, borderWidth: 2, borderRadius: 6, fill: true, tension: 0.4 }
                     ]
                 },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#94a3b8' } }, tooltip: { callbacks: { label: tooltipFormat } } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#334155', drawBorder: false }, ticks: { callback: v => window.isBlurred ? 'Rp •••' : (v >= 1000000 ? 'Rp ' + (v/1000000) + ' Jt' : 'Rp ' + v) } },
-                        x: { grid: { display: false, drawBorder: false } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: tooltipFormat } } }, scales: { y: { display: false }, x: { grid: { display: false, drawBorder: false }, ticks: { font: {size: 10, family: "'Plus Jakarta Sans', sans-serif"}, color: '#94a3b8' } } } }
             });
 
             const ctxComp = document.getElementById('compositionChart').getContext('2d');
             if (window.compChartInstance) window.compChartInstance.destroy();
-
-            if (sumPokok > 0 || sumTunjangan > 0 || sumBonus > 0) {
+            const sumComp = currentChartComp.reduce((a, b) => a + b, 0);
+            if (sumComp > 0) {
                 window.compChartInstance = new Chart(ctxComp, {
                     type: 'doughnut',
-                    data: {
-                        labels: ['Gaji Pokok', 'Tunjangan', 'Bonus'],
-                        datasets: [{ data: [sumPokok, sumTunjangan, sumBonus], backgroundColor: ['#6366f1', '#10b981', '#f59e0b'], borderWidth: 0 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } }, tooltip: { callbacks: { label: tooltipFormat } } } }
+                    data: { labels: ['Pokok', 'Tunjangan', 'Bonus'], datasets: [{ data: currentChartComp, backgroundColor: ['#818cf8', '#34d399', '#fbbf24'], borderWidth: 0, hoverOffset: 4 }] },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'right', labels: { color: '#cbd5e1', boxWidth: 12, font: {size: 10, family: "'Plus Jakarta Sans', sans-serif"} } }, tooltip: { callbacks: { label: tooltipFormat } } } }
                 });
             } else {
                  window.compChartInstance = new Chart(ctxComp, {
-                    type: 'doughnut', data: { labels: ['Kosong'], datasets: [{ data: [1], backgroundColor: ['#334155'], borderWidth: 0 }] },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+                    type: 'doughnut', data: { labels: ['Kosong'], datasets: [{ data: [1], backgroundColor: ['#1e293b'], borderWidth: 0 }] },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
                 });
             }
         };
 
         window.renderSmartInsights = function(data) {
-            const container = document.getElementById('insight-container');
-            const monthLabel = document.getElementById('insight-month');
-            
+            const container = document.getElementById('insight-container'); const monthLabel = document.getElementById('insight-month');
             if(data.length === 0) {
                 monthLabel.innerText = "Tidak ada data";
-                container.innerHTML = `<div class="col-span-3 text-center text-slate-400 py-4"><i class="fa-solid fa-circle-info mr-2"></i> Tambahkan gaji untuk melihat analisis cerdas.</div>`;
-                return;
+                container.innerHTML = `<div class="text-center text-slate-500 text-xs py-2">Asisten butuh minimal 1 bulan data.</div>`; return;
             }
-
             const lastData = data[data.length - 1];
             const netSalary = (lastData.gajiPokok + lastData.tunjangan + lastData.bonus) - lastData.potongan;
             const grossSalary = lastData.gajiPokok + lastData.tunjangan + lastData.bonus;
+            monthLabel.innerText = `${lastData.bulan} '${lastData.tahun_asal.substring(2)}`;
+            const dailyLimit = Math.max(0, netSalary / 30); const zakat = grossSalary * 0.025;
+            const sisaAkhir = netSalary - (lastData.pengeluaran || 0);
             
-            monthLabel.innerText = `${lastData.bulan} ${lastData.tahun_asal}`;
-            const dailyLimit = netSalary / 30;
-            const zakat = grossSalary * 0.025;
+            let statusHtml = '';
+            if(sisaAkhir < 0) statusHtml = `<span class="bg-rose-500/20 text-rose-400 px-2.5 py-1 rounded-md text-[10px] font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Defisit</span>`;
+            else if(sisaAkhir < (netSalary*0.1)) statusHtml = `<span class="bg-amber-500/20 text-amber-400 px-2.5 py-1 rounded-md text-[10px] font-bold">Waspada</span>`;
+            else statusHtml = `<span class="bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-md text-[10px] font-bold">Sehat</span>`;
 
             container.innerHTML = `
-                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
-                    <h3 class="text-sm font-bold text-slate-300 mb-3 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-indigo-400"></i> Rekomendasi 50/30/20</h3>
-                    <div class="space-y-2">
-                        <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">Kebutuhan Pokok (50%)</span><span class="text-white font-medium">${formatRp(netSalary * 0.5)}</span></div><div class="w-full bg-slate-800 rounded-full h-1.5"><div class="bg-indigo-500 h-1.5 rounded-full" style="width: 50%"></div></div></div>
-                        <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">Hiburan/Keinginan (30%)</span><span class="text-white font-medium">${formatRp(netSalary * 0.3)}</span></div><div class="w-full bg-slate-800 rounded-full h-1.5"><div class="bg-pink-500 h-1.5 rounded-full" style="width: 30%"></div></div></div>
-                        <div><div class="flex justify-between text-xs mb-1"><span class="text-slate-400">Tabungan/Invest (20%)</span><span class="text-white font-medium">${formatRp(netSalary * 0.2)}</span></div><div class="w-full bg-slate-800 rounded-full h-1.5"><div class="bg-emerald-500 h-1.5 rounded-full" style="width: 20%"></div></div></div>
+                <div class="flex justify-between items-center bg-white/5 p-3 rounded-2xl border border-white/5 mb-4">
+                    <span class="text-xs font-semibold text-slate-300">Status Keuangan:</span>
+                    ${statusHtml}
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
+                        <p class="text-[10px] font-semibold text-slate-400 mb-1.5"><i class="fa-solid fa-calendar-day text-amber-400 mr-1"></i> Max. Harian</p>
+                        <h4 class="text-sm font-extrabold text-white money-text">${formatRp(dailyLimit)}</h4>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
+                        <p class="text-[10px] font-semibold text-slate-400 mb-1.5"><i class="fa-solid fa-hand-holding-dollar text-emerald-400 mr-1"></i> Zakat (2.5%)</p>
+                        <h4 class="text-sm font-extrabold text-emerald-400 money-text">${formatRp(zakat)}</h4>
                     </div>
                 </div>
-                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50 flex flex-col justify-center items-center text-center">
-                    <div class="bg-amber-500/10 p-3 rounded-full mb-2"><i class="fa-solid fa-calendar-day text-amber-400 text-xl"></i></div>
-                    <p class="text-xs font-medium text-slate-400">Batas Pengeluaran Harian</p>
-                    <h4 class="text-xl font-bold text-white mt-1">${formatRp(dailyLimit)} <span class="text-xs font-normal text-slate-500">/ hari</span></h4>
-                    <p class="text-[10px] text-slate-500 mt-1">Estimasi 30 hari/bulan</p>
-                </div>
-                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50 flex flex-col justify-center items-center text-center">
-                    <div class="bg-emerald-500/10 p-3 rounded-full mb-2"><i class="fa-solid fa-hand-holding-dollar text-emerald-400 text-xl"></i></div>
-                    <p class="text-xs font-medium text-slate-400">Zakat Profesi (2.5%)</p>
-                    <h4 class="text-xl font-bold text-emerald-400 mt-1">${formatRp(zakat)}</h4>
-                    <p class="text-[10px] text-slate-500 mt-1">Dihitung dari Gross Salary</p>
+                <div class="bg-white/5 rounded-2xl p-4 border border-white/5">
+                    <h3 class="text-[10px] font-bold text-slate-300 mb-4 flex items-center gap-2 tracking-widest"><i class="fa-solid fa-chart-pie text-indigo-400"></i> REKOMENDASI BUDGET (50/30/20)</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-2 font-semibold"><span class="text-slate-400">Pokok (50%)</span><span class="text-white money-text">${formatRp(netSalary * 0.5)}</span></div>
+                            <div class="w-full bg-black/40 rounded-full h-2"><div class="bg-indigo-500 h-2 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]" style="width: 50%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-2 font-semibold"><span class="text-slate-400">Hiburan (30%)</span><span class="text-white money-text">${formatRp(netSalary * 0.3)}</span></div>
+                            <div class="w-full bg-black/40 rounded-full h-2"><div class="bg-pink-500 h-2 rounded-full shadow-[0_0_10px_rgba(236,72,153,0.5)]" style="width: 30%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-2 font-semibold"><span class="text-slate-400">Tabungan (20%)</span><span class="text-white money-text">${formatRp(netSalary * 0.2)}</span></div>
+                            <div class="w-full bg-black/40 rounded-full h-2"><div class="bg-emerald-500 h-2 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]" style="width: 20%"></div></div>
+                        </div>
+                    </div>
                 </div>
             `;
+            if(window.isBlurred) document.querySelectorAll('.money-text').forEach(t => t.classList.add('is-blurred'));
         };
 
         window.changeChartType = function(type) {
-            window.mainChartType = type;
-            document.getElementById('btn-bar').className = type === 'bar' ? "px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white" : "px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white";
-            document.getElementById('btn-line').className = type === 'line' ? "px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white" : "px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white";
-            window.renderDashboard();
+            haptic(); window.mainChartType = type;
+            document.getElementById('btn-bar').className = type === 'bar' ? "px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md transition-all" : "px-4 py-1.5 rounded-lg text-[10px] font-bold text-slate-400 transition-all";
+            document.getElementById('btn-line').className = type === 'line' ? "px-4 py-1.5 rounded-lg text-[10px] font-bold bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md transition-all" : "px-4 py-1.5 rounded-lg text-[10px] font-bold text-slate-400 transition-all";
+            window.renderChartsOnly();
         };
 
         window.formMode = 'add';
         window.openFormModal = function(mode, pemilik = 'saya', bulan = '', tahun = '') {
-            window.formMode = mode;
-            const elTahun = document.getElementById('input-tahun');
-            const elBulan = document.getElementById('input-bulan');
-            const elPemilik = document.getElementById('input-pemilik');
-            const divPemilik = document.getElementById('div-input-pemilik');
-            const inputs = ['input-gaji-pokok', 'input-tunjangan', 'input-bonus', 'input-potongan', 'input-pengeluaran'];
-
-            document.getElementById('input-gaji-pokok').classList.remove('border-rose-500');
+            haptic(); window.formMode = mode;
+            const elTahun = document.getElementById('input-tahun'); const elBulan = document.getElementById('input-bulan');
+            const elPemilik = document.getElementById('input-pemilik'); const divPemilik = document.getElementById('div-input-pemilik');
+            const inputs = ['input-gaji-pokok', 'input-tunjangan', 'input-bonus', 'input-potongan', 'input-pengeluaran', 'input-catatan'];
+            document.getElementById('input-gaji-pokok').classList.remove('border-rose-500', 'bg-rose-500/10');
 
             if (mode === 'add') {
-                document.getElementById('modal-title').innerText = `Tambah Pencatatan`;
-                elTahun.disabled = false; elBulan.disabled = false; elPemilik.disabled = false;
-                divPemilik.classList.remove('hidden');
-                
+                document.getElementById('modal-title').innerText = `Tambah Data`;
+                elTahun.disabled = false; elBulan.disabled = false; elPemilik.disabled = false; divPemilik.classList.remove('hidden');
                 elTahun.value = window.currentTahun === 'semua' ? new Date().getFullYear().toString() : window.currentTahun; 
                 elBulan.value = 'Januari'; elPemilik.value = window.currentPemilik === 'gabungan' ? 'saya' : window.currentPemilik;
                 inputs.forEach(id => document.getElementById(id).value = '');
             } else {
-                document.getElementById('modal-title').innerText = `Edit Data - ${bulan} ${tahun}`;
+                document.getElementById('modal-title').innerText = `Edit: ${bulan} ${tahun}`;
                 elTahun.value = tahun; elBulan.value = bulan; elPemilik.value = pemilik;
-                elTahun.disabled = true; elBulan.disabled = true; elPemilik.disabled = true;
-                divPemilik.classList.add('hidden');
+                elTahun.disabled = true; elBulan.disabled = true; elPemilik.disabled = true; divPemilik.classList.add('hidden');
                 
                 const dataEdit = window.rawData.find(i => i.tahun_asal === tahun && i.bulan === bulan && i.pemilik === pemilik);
                 if (dataEdit) {
@@ -829,284 +818,202 @@
                     document.getElementById('input-bonus').value = dataEdit.bonus || '';
                     document.getElementById('input-potongan').value = dataEdit.potongan || '';
                     document.getElementById('input-pengeluaran').value = dataEdit.pengeluaran || '';
+                    document.getElementById('input-catatan').value = dataEdit.catatan || '';
                 }
             }
-            document.getElementById('form-modal').classList.remove('hidden');
+            openSheet('modal-form-overlay', 'modal-form-sheet');
         };
 
-        window.closeFormModal = () => document.getElementById('form-modal').classList.add('hidden');
+        window.closeFormModal = () => closeSheet('modal-form-overlay', 'modal-form-sheet');
 
         window.saveFormData = function() {
-            const tahun = document.getElementById('input-tahun').value.trim();
-            const bulan = document.getElementById('input-bulan').value;
-            const pemilik = document.getElementById('input-pemilik').value;
+            haptic();
+            const tahun = document.getElementById('input-tahun').value.trim(); const bulan = document.getElementById('input-bulan').value; const pemilik = document.getElementById('input-pemilik').value;
             const gajiPokok = parseInt(document.getElementById('input-gaji-pokok').value, 10);
-            
-            if (isNaN(gajiPokok) || gajiPokok < 0 || document.getElementById('input-gaji-pokok').value === '') {
-                document.getElementById('input-gaji-pokok').classList.add('border-rose-500');
-                window.showToast('Gaji Pokok wajib diisi dengan angka', 'error');
-                return;
-            }
+            const gpInput = document.getElementById('input-gaji-pokok');
+            if (isNaN(gajiPokok) || gajiPokok < 0 || gpInput.value === '') { hapticError(); gpInput.classList.add('border-rose-500', 'bg-rose-500/10'); window.showToast('Gaji Pokok wajib diisi!', 'error'); return; }
+            if (!tahun) { hapticError(); window.showToast('Tahun wajib diisi!', 'error'); return; }
             
             const newData = {
-                tahun_asal: tahun, bulan: bulan, pemilik: pemilik,
-                gajiPokok: gajiPokok,
+                tahun_asal: tahun, bulan: bulan, pemilik: pemilik, gajiPokok: gajiPokok,
                 tunjangan: parseInt(document.getElementById('input-tunjangan').value, 10) || 0,
                 bonus: parseInt(document.getElementById('input-bonus').value, 10) || 0,
                 potongan: parseInt(document.getElementById('input-potongan').value, 10) || 0,
-                pengeluaran: parseInt(document.getElementById('input-pengeluaran').value, 10) || 0
+                pengeluaran: parseInt(document.getElementById('input-pengeluaran').value, 10) || 0,
+                catatan: document.getElementById('input-catatan').value.trim()
             };
 
             const index = window.rawData.findIndex(i => i.tahun_asal === tahun && i.bulan === bulan && i.pemilik === pemilik);
-            if (index !== -1) window.rawData[index] = newData;
-            else window.rawData.push(newData);
-
-            saveDataLocal(); // Auto-save
-
-            if (window.formMode === 'add' && window.currentTahun !== 'semua') window.currentTahun = tahun;
-            if (window.formMode === 'add' && window.currentPemilik !== 'gabungan') window.currentPemilik = pemilik;
-            
-            window.closeFormModal();
-            window.updateYearDropdown();
-            window.renderDashboard(); 
-            window.showToast('Data berhasil disimpan', 'success');
+            if (index !== -1) window.rawData[index] = newData; else window.rawData.push(newData);
+            saveDataLocal();
+            if (window.formMode === 'add') {
+                if(window.currentTahun !== 'semua') window.currentTahun = tahun;
+                if(window.currentPemilik !== 'gabungan') window.currentPemilik = pemilik;
+                document.getElementById('pemilikFilter').value = window.currentPemilik;
+            }
+            window.closeFormModal(); window.updateYearDropdown(); window.renderDashboard(); 
+            hapticSuccess(); window.showToast('Tersimpan!', 'success');
         };
 
-        window.confirmDelete = function(pemilik, bulan, tahun) {
-            window.deleteTarget = { pemilik, bulan, tahun };
-            let pName = pemilik === 'saya' ? 'Gaji Saya' : 'Gaji Pasangan';
-            document.getElementById('delete-info').innerText = `${bulan} ${tahun} (${pName})`;
-            document.getElementById('delete-modal').classList.remove('hidden');
-        };
-
+        window.confirmDelete = function(pemilik, bulan, tahun) { haptic(); window.deleteTarget = { pemilik, bulan, tahun }; document.getElementById('delete-info').innerText = `${bulan} ${tahun}`; document.getElementById('delete-modal').classList.remove('hidden'); };
         window.closeDeleteModal = () => document.getElementById('delete-modal').classList.add('hidden');
         window.executeDelete = function() {
             if (window.deleteTarget) {
                 const { pemilik, bulan, tahun } = window.deleteTarget;
                 window.rawData = window.rawData.filter(i => !(i.tahun_asal === tahun && i.bulan === bulan && i.pemilik === pemilik));
-                saveDataLocal();
-                window.closeDeleteModal();
-                window.updateYearDropdown();
-                window.renderDashboard();
-                window.showToast('Data berhasil dihapus', 'success');
+                saveDataLocal(); window.closeDeleteModal(); window.updateYearDropdown(); window.renderDashboard(); hapticSuccess(); window.showToast('Berhasil dihapus', 'success');
             }
         };
 
         window.downloadCSV = function() {
-            let data = window.currentPemilik === 'gabungan' 
-                ? window.rawData.filter(i => window.currentTahun === 'semua' || i.tahun_asal === window.currentTahun) 
-                : window.getProcessedData();
-                
-            if(data.length === 0) { window.showToast('Tidak ada data untuk diunduh', 'error'); return; }
-            
-            let csv = "Tahun,Bulan,Sumber,Gaji Pokok,Tunjangan,Bonus/THR,Potongan,Pengeluaran,Total Bersih (THP),Sisa Uang\n";
-            data.forEach(r => {
-                const thp = (r.gajiPokok + r.tunjangan + r.bonus) - r.potongan;
-                const pengeluaran = r.pengeluaran || 0;
-                const sisa = thp - pengeluaran;
-                csv += `${r.tahun_asal},${r.bulan},${r.pemilik},${r.gajiPokok},${r.tunjangan},${r.bonus},${r.potongan},${pengeluaran},${thp},${sisa}\n`;
-            });
-
-            const link = document.createElement("a");
-            link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8," + csv));
-            link.setAttribute("download", `Keuangan_${window.currentPemilik}_${window.currentTahun}.csv`);
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            window.showToast('Berhasil mengunduh CSV', 'success');
+            haptic(); window.closeSettings();
+            let data = window.rawData.filter(i => (window.currentTahun === 'semua' || i.tahun_asal === window.currentTahun));
+            if(window.currentPemilik !== 'gabungan') data = data.filter(i => i.pemilik === window.currentPemilik);
+            if(data.length === 0) { setTimeout(()=> window.showToast('Data kosong, tidak ada yang diunduh', 'error'), 300); return; }
+            let csv = "Tahun;Bulan;Sumber;Gaji Pokok;Tunjangan;Bonus/THR;Potongan;Pengeluaran;Catatan\n";
+            data.forEach(r => { const cat = (r.catatan || '').replace(/;/g, ','); csv += `${r.tahun_asal};${r.bulan};${r.pemilik};${r.gajiPokok};${r.tunjangan};${r.bonus};${r.potongan};${r.pengeluaran || 0};${cat}\n`; });
+            const link = document.createElement("a"); link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8," + csv));
+            link.setAttribute("download", `SalaryDash_${window.currentPemilik}_${window.currentTahun}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            setTimeout(()=> window.showToast('File CSV berhasil diunduh', 'success'), 300);
         };
 
-        window.openImportModal = () => document.getElementById('import-modal').classList.remove('hidden');
-        window.closeImportModal = () => { document.getElementById('import-modal').classList.add('hidden'); document.getElementById('dropzone-file').value = ''; };
-
         window.handleFileSelect = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) { window.processCSV(e.target.result); };
-            reader.readAsText(file);
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader(); reader.onload = function(e) { window.processCSV(e.target.result); }; reader.readAsText(file);
         };
 
         window.processCSV = function(csvText) {
+            haptic();
             const lines = csvText.replace(/\r/g, '').split('\n');
-            if (lines.length < 2) { window.showToast('File CSV kosong atau format salah.', 'error'); return; }
-            
-            const separator = lines[0].includes(';') ? ';' : ','; // Deteksi otomatis separator Excel Indonesia
-            let successCount = 0;
-            
+            if (lines.length < 2) { window.showToast('Format file CSV salah', 'error'); return; }
+            const sep = lines[0].includes(';') ? ';' : ','; let suc = 0;
+            const clean = (str) => { if(!str) return 0; let num = str.replace(/rp| /gi, '').replace(/\./g, ''); return parseInt(num) || 0; };
             for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-                
-                const cols = line.split(separator);
-                if (cols.length < 7) continue;
-
-                const tahun = cols[0].trim(); const bulan = cols[1].trim();
-                const pemilik = cols[2].trim().toLowerCase() === 'pasangan' ? 'pasangan' : 'saya';
-                
-                // Pembersihan format angka (hilangkan titik/ribuan dari Excel)
-                const cleanNum = (str) => parseInt(str ? str.replace(/\./g, '') : '0') || 0;
-                
-                const pokok = cleanNum(cols[3]); const tunjangan = cleanNum(cols[4]);
-                const bonus = cleanNum(cols[5]); const potongan = cleanNum(cols[6]);
-                const pengeluaran = cols.length >= 8 ? cleanNum(cols[7]) : 0; // Kompatibilitas versi lama
-
-                if (!tahun || !bulan || pokok <= 0) continue; 
-
-                const newData = { tahun_asal: tahun, bulan: bulan, pemilik: pemilik, gajiPokok: pokok, tunjangan: tunjangan, bonus: bonus, potongan: potongan, pengeluaran: pengeluaran };
-                const index = window.rawData.findIndex(item => item.tahun_asal === tahun && item.bulan === bulan && item.pemilik === pemilik);
-                if (index !== -1) window.rawData[index] = newData; else window.rawData.push(newData);
-                successCount++;
+                const c = lines[i].trim().split(sep); if (c.length < 7) continue;
+                const t = c[0].trim(); const b = c[1].trim(); const p = c[2].trim().toLowerCase() === 'pasangan' ? 'pasangan' : 'saya';
+                const gp = clean(c[3]); const tj = clean(c[4]); const bn = clean(c[5]); const pt = clean(c[6]); 
+                const pg = c.length >= 8 ? clean(c[7]) : 0; const cat = c.length >= 9 ? c[8].trim() : '';
+                if (!t || !b || gp <= 0) continue; 
+                const nd = { tahun_asal: t, bulan: b, pemilik: p, gajiPokok: gp, tunjangan: tj, bonus: bn, potongan: pt, pengeluaran: pg, catatan: cat };
+                const idx = window.rawData.findIndex(item => item.tahun_asal === t && item.bulan === b && item.pemilik === p);
+                if (idx !== -1) window.rawData[idx] = nd; else window.rawData.push(nd); suc++;
             }
-
-            if(successCount > 0) {
-                saveDataLocal();
-                window.updateYearDropdown(); window.renderDashboard();
-                window.showToast(`Sukses! ${successCount} data diimpor.`, 'success');
-            } else { window.showToast('Gagal! Tidak ada data valid.', 'error'); }
+            if(suc > 0) { saveDataLocal(); window.updateYearDropdown(); window.renderDashboard(); hapticSuccess(); window.showToast(`Berhasil! ${suc} data diimpor`, 'success'); } 
+            else { hapticError(); window.showToast('Gagal memproses data CSV', 'error'); }
             window.closeImportModal();
         };
 
-        window.closeCalc = () => { document.getElementById('calc-modal-container').innerHTML = ''; };
+        window.closeCalc = () => {
+            haptic(); const container = document.getElementById('calc-modal-container');
+            const sheet = container.querySelector('.bottom-sheet-container'); const overlay = container.querySelector('.modal-overlay');
+            if(sheet && overlay) { sheet.classList.remove('open'); overlay.classList.remove('open'); setTimeout(() => { container.innerHTML = ''; toggleFab(true); }, 400); } 
+            else container.innerHTML = '';
+        };
 
         window.openCalc = function(type) {
-            if(window.isBlurred) { window.showToast('Matikan mode sensor (mata) untuk menggunakan kalkulator', 'error'); return; }
-            let title = "", icon = "", contentHtml = "", calcFunction = "";
-            let avg = window.averageSalary || 0;
-
-            if(avg === 0) {
-                window.showToast("Harap masukkan setidaknya 1 data gaji untuk menggunakan fitur ini.", 'error'); return;
-            }
-
+            haptic(); toggleFab(false);
+            if(window.isBlurred) { window.showToast('Matikan sensor mata terlebih dahulu', 'error'); toggleFab(true); return; }
+            if(!window.averageSalary || window.averageSalary === 0) { window.showToast("Butuh minimal 1 catatan gaji", 'error'); toggleFab(true); return; }
+            let title = "", icon = "", contentHtml = "", calcFunction = ""; let avg = window.averageSalary;
+            
             if(type === 'kredit') {
-                title = "Kredit Sehat"; icon = "fa-shield-halved text-blue-400"; calcFunction = "runKredit()";
+                title = "Kredit Sehat"; icon = "fa-shield-halved text-blue-400 bg-blue-500/10 border-blue-500/20"; calcFunction = "runKredit()";
                 contentHtml = `
-                    <div class="space-y-3">
-                        <div><label class="text-xs text-slate-400">Harga Barang (Rp)</label><input type="number" id="c-harga" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" placeholder="Misal 15000000"></div>
-                        <div><label class="text-xs text-slate-400">Tenor Cicilan (Bulan)</label><input type="number" id="c-tenor" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" placeholder="12"></div>
-                    </div>
-                    <div id="c-result" class="mt-4 hidden p-4 rounded-lg text-center"></div>
-                `;
+                    <div class="space-y-4">
+                        <div><label class="text-xs font-bold text-slate-400 mb-2 block">Harga Barang / Total Pinjaman (Rp)</label><input type="number" id="c-harga" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm focus:border-indigo-500 outline-none" placeholder="Misal: 15000000"></div>
+                        <div><label class="text-xs font-bold text-slate-400 mb-2 block">Tenor Cicilan (Bulan)</label><input type="number" id="c-tenor" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm focus:border-indigo-500 outline-none" placeholder="Contoh: 12"></div>
+                    </div><div id="c-result" class="mt-6 hidden p-5 rounded-2xl text-center"></div>`;
             } else if(type === 'darurat') {
-                title = "Dana Darurat"; icon = "fa-umbrella text-emerald-400"; calcFunction = "runDarurat()";
-                let defaultExpense = avg * 0.5;
+                title = "Kalkulator Dana Darurat"; icon = "fa-umbrella text-emerald-400 bg-emerald-500/10 border-emerald-500/20"; calcFunction = "runDarurat()";
                 contentHtml = `
-                    <div class="space-y-3">
-                        <div><label class="text-xs text-slate-400">Status Pernikahan</label>
-                            <select id="c-status" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm">
-                                <option value="3">Lajang (3x Pengeluaran)</option>
-                                <option value="6">Menikah (6x Pengeluaran)</option>
-                            </select></div>
-                        <div><label class="text-xs text-slate-400">Pengeluaran Bulanan (Rp)</label><input type="number" id="c-pengeluaran" value="${defaultExpense}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm"></div>
-                        <div><label class="text-xs text-slate-400">Terkumpul Saat Ini (Rp)</label><input type="number" id="c-terkumpul" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" placeholder="0"></div>
-                    </div>
-                    <div id="c-result" class="mt-4 hidden p-4 rounded-lg text-center border border-slate-700 bg-slate-900"></div>
-                `;
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 mb-2 block">Status Pribadi</label>
+                            <select id="c-status" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm appearance-none focus:border-indigo-500 outline-none"><option value="3" class="bg-slate-900">Lajang / Single (3x Pengeluaran)</option><option value="6" class="bg-slate-900">Menikah (6x Pengeluaran)</option></select>
+                        </div>
+                        <div><label class="text-xs font-bold text-slate-400 mb-2 block">Rata-rata Pengeluaran / Bulan</label><input type="number" id="c-pengeluaran" value="${avg*0.5}" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm focus:border-indigo-500 outline-none"></div>
+                        <div><label class="text-xs font-bold text-slate-400 mb-2 block">Tabungan Saat Ini (Rp)</label><input type="number" id="c-terkumpul" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm focus:border-indigo-500 outline-none" placeholder="Isi 0 jika belum ada"></div>
+                    </div><div id="c-result" class="mt-6 hidden p-5 rounded-2xl border border-white/10 bg-black/20 text-center shadow-inner"></div>`;
             } else if(type === 'wishlist') {
-                title = "Target Impian"; icon = "fa-crosshairs text-pink-400"; calcFunction = "runWishlist()";
+                title = "Kalkulator Wishlist"; icon = "fa-crosshairs text-pink-400 bg-pink-500/10 border-pink-500/20"; calcFunction = "runWishlist()";
                 contentHtml = `
-                    <div class="space-y-3">
-                        <div><label class="text-xs text-slate-400">Harga Barang Impian (Rp)</label><input type="number" id="c-harga" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" placeholder="0"></div>
-                        <div><label class="text-xs text-slate-400">Mampu Nabung / Bulan (Rp)</label><input type="number" id="c-tabung" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" placeholder="0"></div>
-                    </div>
-                    <div id="c-result" class="mt-4 hidden p-4 rounded-lg border border-slate-700 bg-slate-900 text-center"></div>
-                `;
+                    <div class="space-y-4">
+                        <div><label class="text-xs font-bold text-slate-400 mb-2 block">Harga Barang Impian (Rp)</label><input type="number" id="c-harga" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm focus:border-indigo-500 outline-none" placeholder="Misal: 10000000"></div>
+                        <div><label class="text-xs font-bold text-slate-400 mb-2 block">Kesanggupan Menabung / Bulan</label><input type="number" id="c-tabung" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm focus:border-indigo-500 outline-none" placeholder="Misal: 500000"></div>
+                    </div><div id="c-result" class="mt-6 hidden p-5 rounded-2xl border border-white/10 bg-black/20 text-center shadow-inner"></div>`;
             } else if(type === 'pajak') {
-                title = "Simulasi BPJS (Gross ke Nett)"; icon = "fa-file-invoice-dollar text-amber-400"; calcFunction = "runPajak()";
+                title = "Simulasi BPJS & Pajak"; icon = "fa-file-invoice-dollar text-amber-400 bg-amber-500/10 border-amber-500/20"; calcFunction = "runPajak()";
                 contentHtml = `
-                    <div class="space-y-3">
-                        <div><label class="text-xs text-slate-400">Tawaran Gaji Kotor/Bruto (Rp)</label><input type="number" id="c-bruto" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm font-bold" placeholder="0"></div>
-                    </div>
-                    <div id="c-result" class="mt-4 hidden p-4 rounded-lg border border-slate-700 bg-slate-900"></div>
-                `;
+                    <div class="space-y-4">
+                        <div><label class="text-xs font-bold text-slate-400 mb-2 block">Gaji Kotor (Gross) Penawaran</label><input type="number" id="c-bruto" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-white font-bold focus:border-indigo-500 text-lg outline-none" placeholder="Ketik nominal bruto..."></div>
+                    </div><div id="c-result" class="mt-6 hidden p-5 rounded-2xl border border-white/10 bg-black/20 shadow-inner"></div>`;
             }
 
             document.getElementById('calc-modal-container').innerHTML = `
-                <div class="fixed inset-0 z-[110]">
-                    <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" onclick="window.closeCalc()"></div>
-                    <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
-                        <div class="relative w-full max-w-sm bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
-                            <div class="flex justify-between items-center p-4 border-b border-slate-700 bg-slate-900/50">
-                                <h3 class="font-bold text-white"><i class="fa-solid ${icon} mr-2"></i>${title}</h3>
-                                <button onclick="window.closeCalc()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-                            </div>
-                            <div class="p-5">${contentHtml}</div>
-                            <div class="p-4 border-t border-slate-700 bg-slate-900/80">
-                                <button onclick="window.${calcFunction}" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded-lg">Hitung Sekarang</button>
-                            </div>
-                        </div>
+                <div class="fixed inset-0 bg-black/60 backdrop-blur-md z-[110] modal-overlay" id="overlay-calc" onclick="window.closeCalc()"></div>
+                <div class="fixed bottom-0 left-0 right-0 w-full bg-[#0A0F1C] rounded-t-[2rem] border-t border-white/10 flex flex-col z-[111] bottom-sheet-container pb-[var(--sab)] shadow-[0_-10px_40px_rgba(0,0,0,0.8)]" id="sheet-calc">
+                    <div class="w-full flex justify-center py-5"><div class="drag-handle"></div></div>
+                    <div class="px-6 pb-8 overflow-y-auto max-h-[85vh]">
+                        <h3 class="font-extrabold text-white text-xl mb-6 flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center border ${icon.split(' ').slice(-2).join(' ')}"><i class="fa-solid ${icon.split(' ')[0]} ${icon.split(' ')[1]} text-xl"></i></div> 
+                            ${title}
+                        </h3>
+                        ${contentHtml}
+                        <button onclick="window.${calcFunction}" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-4 rounded-2xl active:scale-95 transition-all shadow-[0_4px_20px_rgba(99,102,241,0.4)] mt-6">Hitung Sekarang</button>
                     </div>
                 </div>`;
+            setTimeout(() => { document.getElementById('overlay-calc').classList.add('open'); document.getElementById('sheet-calc').classList.add('open'); }, 10);
         };
 
         window.runKredit = function() {
-            let harga = Number(document.getElementById('c-harga').value);
-            let tenor = Number(document.getElementById('c-tenor').value);
-            if(!harga || !tenor) { window.showToast('Isi data dengan lengkap', 'error'); return; }
-
-            let cicilan = harga / tenor; let maxAman = window.averageSalary * 0.3; let rasio = (cicilan / window.averageSalary) * 100;
-            let resBox = document.getElementById('c-result'); let statusClass = '', statusText = '', icon = '';
-            
-            if(rasio <= 20) { statusClass = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'; statusText = 'Sangat Aman'; icon='fa-circle-check'; }
-            else if(rasio <= 30) { statusClass = 'bg-amber-500/10 border-amber-500/30 text-amber-400'; statusText = 'Batas Maksimal'; icon='fa-triangle-exclamation'; }
-            else { statusClass = 'bg-rose-500/10 border-rose-500/30 text-rose-400'; statusText = 'Bahaya (Risiko Tinggi)'; icon='fa-skull-crossbones'; }
-
-            resBox.className = `mt-4 p-4 rounded-lg border ${statusClass}`;
-            resBox.innerHTML = `<h4 class="text-xl font-bold">${formatRp(cicilan)}<span class="text-xs font-normal"> / bln</span></h4><p class="text-sm mt-1 mb-2 font-medium"><i class="fa-solid ${icon}"></i> ${statusText}</p><div class="text-xs opacity-80 pt-2 border-t border-current/20">Cicilan mengambil <b>${rasio.toFixed(1)}%</b> gaji. (Batas 30%)</div>`;
-            resBox.classList.remove('hidden');
+            haptic(); let h = Number(document.getElementById('c-harga').value); let t = Number(document.getElementById('c-tenor').value);
+            if(!h||!t) { hapticError(); window.showToast('Mohon lengkapi harga & tenor', 'error'); return; }
+            let cicilan = h/t; let rasio = (cicilan/window.averageSalary)*100;
+            let c='', s='', i='';
+            if(rasio<=20){c='bg-emerald-500/10 border-emerald-500/30 text-emerald-400'; s='Sangat Aman'; i='fa-circle-check';}
+            else if(rasio<=30){c='bg-amber-500/10 border-amber-500/30 text-amber-400'; s='Batas Maksimal'; i='fa-triangle-exclamation';}
+            else{c='bg-rose-500/10 border-rose-500/30 text-rose-400'; s='Berbahaya!'; i='fa-skull-crossbones';}
+            let res = document.getElementById('c-result'); res.className = `mt-6 p-5 rounded-2xl border fade-in ${c}`;
+            res.innerHTML = `<h4 class="text-3xl font-extrabold">${formatRp(cicilan)}<span class="text-[10px] font-medium opacity-70">/bln</span></h4><p class="text-sm mt-2 font-bold"><i class="fa-solid ${i}"></i> ${s}</p><div class="text-xs opacity-80 pt-3 border-t border-current/20 mt-4">Mengambil <b>${rasio.toFixed(1)}%</b> dari rata-rata gaji.</div>`;
+            res.classList.remove('hidden'); hapticSuccess();
         };
 
         window.runDarurat = function() {
-            let status = Number(document.getElementById('c-status').value);
-            let pengeluaran = Number(document.getElementById('c-pengeluaran').value);
-            let terkumpul = Number(document.getElementById('c-terkumpul').value) || 0;
-            if(!pengeluaran) { window.showToast('Isi Pengeluaran', 'error'); return; }
-
-            let target = status * pengeluaran; let persen = Math.min((terkumpul / target) * 100, 100); let sisa = target - terkumpul;
-            let resBox = document.getElementById('c-result');
-            resBox.innerHTML = `<p class="text-xs text-slate-400">Target Dana Darurat</p><h4 class="text-xl font-bold text-emerald-400 mt-1">${formatRp(target)}</h4><div class="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden"><div class="bg-emerald-500 h-2 rounded-full progress-animate" style="width: ${persen}%"></div></div><div class="flex justify-between text-[10px] mt-1 text-slate-500"><span>${persen.toFixed(1)}% Terkumpul</span><span>${sisa > 0 ? 'Kurang ' + formatRp(sisa) : 'Tercapai! 🎉'}</span></div>`;
-            resBox.classList.remove('hidden');
+            haptic(); let s = Number(document.getElementById('c-status').value); let p = Number(document.getElementById('c-pengeluaran').value); let tk = Number(document.getElementById('c-terkumpul').value)||0;
+            if(!p) { hapticError(); window.showToast('Pengeluaran tidak boleh kosong', 'error'); return; }
+            let t=s*p; let per=Math.min((tk/t)*100,100); let ss=t-tk; let res = document.getElementById('c-result');
+            res.innerHTML = `<p class="text-xs font-semibold text-slate-400">Target Total Dana Darurat</p><h4 class="text-2xl font-extrabold text-emerald-400 mt-1">${formatRp(t)}</h4><div class="w-full bg-black/40 rounded-full h-3 mt-5"><div class="bg-emerald-500 h-3 rounded-full progress-animate shadow-[0_0_10px_rgba(16,185,129,0.5)]" style="width: ${per}%"></div></div><div class="flex justify-between text-[10px] mt-3 font-bold text-slate-400"><span>Terkumpul ${per.toFixed(1)}%</span><span>${ss>0?'Kurang '+formatRp(ss):'<span class="text-emerald-400">Tercapai! 🎉</span>'}</span></div>`;
+            res.classList.remove('hidden'); res.classList.add('fade-in'); hapticSuccess();
         };
 
         window.runWishlist = function() {
-            let harga = Number(document.getElementById('c-harga').value);
-            let tabung = Number(document.getElementById('c-tabung').value);
-            if(!harga || !tabung) { window.showToast('Isi Harga dan Tabungan', 'error'); return; }
-
-            let bln = Math.ceil(harga / tabung);
-            let now = new Date(); now.setMonth(now.getMonth() + bln);
-            let tglSelesai = now.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
-
-            let resBox = document.getElementById('c-result');
-            resBox.innerHTML = `<div class="bg-pink-500/20 w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-2"><i class="fa-solid fa-calendar-check text-pink-400 text-xl"></i></div><h4 class="text-2xl font-bold text-white">${bln} Bulan</h4><p class="text-sm text-slate-400 mt-1">Barang ini akan terbeli sekitar <b>${tglSelesai}</b></p>`;
-            resBox.classList.remove('hidden');
+            haptic(); let h = Number(document.getElementById('c-harga').value); let tb = Number(document.getElementById('c-tabung').value);
+            if(!h||!tb) { hapticError(); window.showToast('Lengkapi harga dan kesanggupan nabung', 'error'); return; }
+            let bln = Math.ceil(h/tb); let now = new Date(); now.setMonth(now.getMonth()+bln);
+            let tgl = now.toLocaleString('id-ID', { month: 'long', year: 'numeric' }); let res = document.getElementById('c-result');
+            res.innerHTML = `<div class="bg-pink-500/20 w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-4 border border-pink-500/20"><i class="fa-solid fa-calendar-check text-pink-400 text-2xl drop-shadow-[0_0_8px_rgba(236,72,153,0.8)]"></i></div><h4 class="text-3xl font-extrabold text-white">${bln} Bulan Lagi</h4><p class="text-xs text-slate-400 mt-2">Estimasi barang terbeli pada:<br><b class="text-white text-sm mt-1 inline-block">${tgl}</b></p>`;
+            res.classList.remove('hidden'); res.classList.add('fade-in'); hapticSuccess();
         };
 
         window.runPajak = function() {
-            let bruto = Number(document.getElementById('c-bruto').value);
-            if(!bruto) { window.showToast('Isi Gaji Bruto', 'error'); return; }
-
-            let limitKes = Math.min(bruto, 12000000); let limitJp = Math.min(bruto, 10042300);
-            let potKes = limitKes * 0.01; let potJht = bruto * 0.02; let potJp = limitJp * 0.01;
-            let neto = bruto - (potKes + potJht + potJp);
-
-            let resBox = document.getElementById('c-result');
-            resBox.innerHTML = `<div class="text-left text-sm space-y-2"><div class="flex justify-between text-slate-400"><span>Gaji Bruto</span> <span class="text-white">${formatRp(bruto)}</span></div><div class="flex justify-between text-slate-500 text-xs"><span>BPJS Kes (1%)</span> <span>-${formatRp(potKes)}</span></div><div class="flex justify-between text-slate-500 text-xs"><span>Jaminan Hari Tua (2%)</span> <span>-${formatRp(potJht)}</span></div><div class="flex justify-between text-slate-500 text-xs pb-2 border-b border-slate-700"><span>Jaminan Pensiun (1%)</span> <span>-${formatRp(potJp)}</span></div><div class="flex justify-between font-bold text-amber-400 pt-1"><span>Estimasi Gaji Bersih</span> <span>${formatRp(neto)}</span></div><p class="text-[10px] text-slate-500 mt-2">*Belum termasuk PPh21.</p></div>`;
-            resBox.classList.remove('hidden');
+            haptic(); let b = Number(document.getElementById('c-bruto').value);
+            if(!b) { hapticError(); window.showToast('Gaji Bruto wajib diisi', 'error'); return; }
+            let pK = Math.min(b, 12000000)*0.01; let pJht = b*0.02; let pJp = Math.min(b, 10042300)*0.01; let neto = b-(pK+pJht+pJp); let res = document.getElementById('c-result');
+            res.innerHTML = `<div class="text-left space-y-2.5"><div class="flex justify-between text-slate-300 font-semibold text-xs"><span>Gaji Bruto</span> <span>${formatRp(b)}</span></div><div class="flex justify-between text-slate-500 text-[11px] font-medium"><span>Potong BPJS Kes (1%)</span> <span>-${formatRp(pK)}</span></div><div class="flex justify-between text-slate-500 text-[11px] font-medium"><span>Potong JHT (2%)</span> <span>-${formatRp(pJht)}</span></div><div class="flex justify-between text-slate-500 text-[11px] font-medium pb-3 border-b border-white/10"><span>Potong Jaminan Pensiun (1%)</span> <span>-${formatRp(pJp)}</span></div><div class="flex justify-between font-extrabold text-amber-400 pt-2 text-lg items-center"><span>Take Home Pay</span> <span>${formatRp(neto)}</span></div><p class="text-[9px] text-slate-500 mt-3 text-center">*Hanya estimasi BPJS. Belum termasuk potongan PPh 21.</p></div>`;
+            res.classList.remove('hidden'); res.classList.add('fade-in'); hapticSuccess();
         };
 
-        window.showToast = function(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            const bgClass = type === 'success' ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-rose-500/20 border-rose-500/50 text-rose-400';
-            const icon = type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation';
-
-            toast.className = `flex items-center gap-3 px-4 py-3 rounded-lg border backdrop-blur-md shadow-lg transform transition-all duration-300 translate-y-10 opacity-0 bg-slate-900 ${bgClass}`;
-            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i> <span class="text-sm font-medium text-white">${message}</span>`;
-            
+        window.showToast = function(msg, type = 'success') {
+            const container = document.getElementById('toast-container'); const toast = document.createElement('div');
+            const bg = type === 'success' ? 'bg-[#0B1221] border-emerald-500/30' : 'bg-[#1A0B10] border-rose-500/30';
+            const icon = type === 'success' ? 'fa-check text-emerald-400' : 'fa-exclamation text-rose-400';
+            const glow = type === 'success' ? 'shadow-[0_4px_20px_rgba(16,185,129,0.2)]' : 'shadow-[0_4px_20px_rgba(244,63,94,0.2)]';
+            toast.className = `flex items-center gap-3 px-4 py-3.5 rounded-2xl border ${glow} transform transition-all duration-300 translate-y-10 opacity-0 ${bg} pointer-events-auto mt-2 mx-4`;
+            toast.innerHTML = `<div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10"><i class="fa-solid ${icon} text-xs"></i></div> <span class="text-sm font-bold text-white tracking-tight">${msg}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
-            setTimeout(() => { toast.classList.add('translate-y-10', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
+            setTimeout(() => { toast.classList.add('translate-y-10', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 2500);
         };
-
     </script>
 </body>
 </html>
