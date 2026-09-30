@@ -56,7 +56,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <label for="tahunSelect" class="text-sm font-medium text-slate-400 hidden sm:block">Periode:</label>
-                    <select id="tahunSelect" class="bg-slate-900 border border-slate-700 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 outline-none transition-colors">
+                    <select id="tahunSelect" onchange="window.handleYearChange(event)" class="bg-slate-900 border border-slate-700 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 outline-none transition-colors">
                         <option value="semua">Semua Tahun</option>
                         <option value="2026" selected>Tahun 2026</option>
                         <option value="2025">Tahun 2025</option>
@@ -75,13 +75,13 @@
             <!-- Card 1 -->
             <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-sm relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4 relative z-10">
                     <div class="bg-slate-900 p-3 rounded-lg border border-slate-700">
                         <i class="fa-solid fa-sack-dollar text-indigo-400 text-xl"></i>
                     </div>
                     <div>
                         <p class="text-sm font-medium text-slate-400">Total Gaji Bersih YTD</p>
-                        <h3 class="text-2xl font-bold text-white mt-1" id="total-gaji">Rp 0</h3>
+                        <h3 class="text-2xl font-bold text-white mt-1 truncate" id="total-gaji">Rp 0</h3>
                     </div>
                 </div>
             </div>
@@ -89,13 +89,13 @@
             <!-- Card 2 -->
             <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-sm relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4 relative z-10">
                     <div class="bg-slate-900 p-3 rounded-lg border border-slate-700">
                         <i class="fa-solid fa-chart-line text-emerald-400 text-xl"></i>
                     </div>
                     <div>
                         <p class="text-sm font-medium text-slate-400">Rata-rata per Bulan</p>
-                        <h3 class="text-2xl font-bold text-white mt-1" id="rata-gaji">Rp 0</h3>
+                        <h3 class="text-2xl font-bold text-white mt-1 truncate" id="rata-gaji">Rp 0</h3>
                     </div>
                 </div>
             </div>
@@ -103,13 +103,13 @@
             <!-- Card 3 -->
             <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-sm relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-amber-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4 relative z-10">
                     <div class="bg-slate-900 p-3 rounded-lg border border-slate-700">
                         <i class="fa-solid fa-trophy text-amber-400 text-xl"></i>
                     </div>
                     <div>
                         <p class="text-sm font-medium text-slate-400">Bulan Tertinggi</p>
-                        <h3 class="text-2xl font-bold text-white mt-1" id="bulan-tertinggi">-</h3>
+                        <h3 class="text-2xl font-bold text-white mt-1 truncate" id="bulan-tertinggi">-</h3>
                     </div>
                 </div>
             </div>
@@ -117,13 +117,13 @@
             <!-- Card 4 -->
             <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-sm relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-purple-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4 relative z-10">
                     <div class="bg-slate-900 p-3 rounded-lg border border-slate-700">
                         <i class="fa-solid fa-gift text-purple-400 text-xl"></i>
                     </div>
                     <div>
                         <p class="text-sm font-medium text-slate-400">Total Bonus/THR</p>
-                        <h3 class="text-2xl font-bold text-white mt-1" id="total-bonus">Rp 0</h3>
+                        <h3 class="text-2xl font-bold text-white mt-1 truncate" id="total-bonus">Rp 0</h3>
                     </div>
                 </div>
             </div>
@@ -133,16 +133,16 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <!-- Main Chart (Bar/Line) -->
             <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-sm p-6 lg:col-span-2">
-                <div class="flex justify-between items-center mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
                         <h2 class="text-lg font-bold text-white">Tren Gaji Bersih</h2>
                         <p class="text-sm text-slate-400">Pergerakan pendapatan bersih per bulan</p>
                     </div>
                     <div class="flex bg-slate-900 rounded-lg p-1 border border-slate-700">
-                        <button onclick="changeChartType('bar')" id="btn-bar" class="px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors">
+                        <button onclick="window.changeChartType('bar')" id="btn-bar" class="px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors">
                             <i class="fa-solid fa-chart-simple mr-1"></i> Bar
                         </button>
-                        <button onclick="changeChartType('line')" id="btn-line" class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors">
+                        <button onclick="window.changeChartType('line')" id="btn-line" class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors">
                             <i class="fa-solid fa-chart-line mr-1"></i> Line
                         </button>
                     </div>
@@ -156,7 +156,7 @@
             <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-sm p-6 lg:col-span-1">
                 <div>
                     <h2 class="text-lg font-bold text-white">Komposisi Pendapatan</h2>
-                    <p class="text-sm text-slate-400">Distribusi sumber pendapatan tahunan</p>
+                    <p class="text-sm text-slate-400">Distribusi sumber pendapatan</p>
                 </div>
                 <div class="relative h-64 w-full mt-6 flex justify-center items-center">
                     <canvas id="compositionChart"></canvas>
@@ -172,10 +172,10 @@
                     <p class="text-sm text-slate-400">Kelola dan lihat detail pendapatan bulanan Anda</p>
                 </div>
                 <div class="flex gap-3">
-                    <button onclick="openFormModal('add')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2 border border-indigo-500">
+                    <button onclick="window.openFormModal('add')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2 border border-indigo-500">
                         <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Tambah Data</span>
                     </button>
-                    <button onclick="downloadCSV()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-600 flex items-center gap-2 shadow-sm">
+                    <button onclick="window.downloadCSV()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-600 flex items-center gap-2 shadow-sm">
                         <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Unduh CSV</span>
                     </button>
                 </div>
@@ -208,12 +208,12 @@
     <!-- Modal Add/Edit Data -->
     <div id="form-modal" class="fixed inset-0 z-[100] hidden">
         <!-- Backdrop -->
-        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" onclick="closeFormModal()"></div>
+        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" onclick="window.closeFormModal()"></div>
         
         <!-- Modal Panel -->
         <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-                <div class="relative transform overflow-hidden rounded-xl bg-slate-800 border border-slate-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-md">
+                <div class="relative transform overflow-hidden rounded-xl bg-slate-800 border border-slate-700 text-left shadow-xl transition-all sm:my-8 w-full sm:max-w-md">
                     <div class="bg-slate-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
                             <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-indigo-500/20 sm:mx-0 sm:h-10 sm:w-10">
@@ -233,7 +233,14 @@
                                             <select id="input-bulan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
                                                 <option value="Januari">Januari</option>
                                                 <option value="Februari">Februari</option>
-                                            <option value="Agustus">Agustus</option>
+                                                <option value="Maret">Maret</option>
+                                                <option value="April">April</option>
+                                                <option value="Mei">Mei</option>
+                                                <option value="Juni">Juni</option>
+                                                <option value="Juli">Juli</option>
+                                                <option value="Agustus">Agustus</option>
+                                                <option value="September">September</option>
+                                                <option value="Oktober">Oktober</option>
                                                 <option value="November">November</option>
                                                 <option value="Desember">Desember</option>
                                             </select>
@@ -242,7 +249,7 @@
                                     <div>
                                         <label class="block text-sm font-medium text-slate-400 mb-1">Gaji Pokok (Rp) <span class="text-rose-500">*</span></label>
                                         <input type="number" id="input-gaji-pokok" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors" placeholder="0">
-                                        <p id="error-gaji" class="text-rose-500 text-xs mt-1 hidden">Gaji Pokok wajib diisi dengan angka.</p>
+                                        <p id="error-gaji" class="text-rose-500 text-xs mt-1 hidden">Gaji Pokok wajib diisi dengan angka valid.</p>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-slate-400 mb-1">Tunjangan (Rp) <span class="text-slate-500 font-normal text-xs">(Opsional)</span></label>
@@ -261,8 +268,8 @@
                         </div>
                     </div>
                     <div class="bg-slate-900/80 border-t border-slate-700 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" onclick="saveFormData()" class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto transition-colors border border-indigo-500">Simpan Data</button>
-                        <button type="button" onclick="closeFormModal()" class="mt-3 inline-flex w-full justify-center rounded-lg bg-transparent px-4 py-2 text-sm font-semibold text-slate-400 border border-slate-600 shadow-sm hover:text-white hover:bg-slate-700 sm:mt-0 sm:w-auto transition-colors">Batal</button>
+                        <button type="button" onclick="window.saveFormData()" class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto transition-colors border border-indigo-500">Simpan Data</button>
+                        <button type="button" onclick="window.closeFormModal()" class="mt-3 inline-flex w-full justify-center rounded-lg bg-transparent px-4 py-2 text-sm font-semibold text-slate-400 border border-slate-600 shadow-sm hover:text-white hover:bg-slate-700 sm:mt-0 sm:w-auto transition-colors">Batal</button>
                     </div>
                 </div>
             </div>
@@ -271,7 +278,7 @@
 
     <!-- Modal Konfirmasi Hapus -->
     <div id="delete-modal" class="fixed inset-0 z-[100] hidden">
-        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
+        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" onclick="window.closeDeleteModal()"></div>
         <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
                 <div class="relative transform overflow-hidden rounded-xl bg-slate-800 border border-slate-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm">
@@ -287,8 +294,8 @@
                         </div>
                     </div>
                     <div class="bg-slate-900/80 border-t border-slate-700 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" onclick="executeDelete()" class="inline-flex w-full justify-center rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 sm:ml-3 sm:w-auto transition-colors border border-rose-600">Hapus</button>
-                        <button type="button" onclick="closeDeleteModal()" class="mt-3 inline-flex w-full justify-center rounded-lg bg-transparent px-4 py-2 text-sm font-semibold text-slate-400 border border-slate-600 shadow-sm hover:text-white hover:bg-slate-700 sm:mt-0 sm:w-auto transition-colors">Batal</button>
+                        <button type="button" onclick="window.executeDelete()" class="inline-flex w-full justify-center rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 sm:ml-3 sm:w-auto transition-colors border border-rose-600">Hapus</button>
+                        <button type="button" onclick="window.closeDeleteModal()" class="mt-3 inline-flex w-full justify-center rounded-lg bg-transparent px-4 py-2 text-sm font-semibold text-slate-400 border border-slate-600 shadow-sm hover:text-white hover:bg-slate-700 sm:mt-0 sm:w-auto transition-colors">Batal</button>
                     </div>
                 </div>
             </div>
@@ -303,111 +310,139 @@
         </div>
     </footer>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         document.getElementById('current-year').textContent = new Date().getFullYear();
 
-        // ------------------ SISTEM PENYIMPANAN PERANGKAT ------------------
-        let db, firestoreDoc, firestoreSetDoc, firestoreDeleteDoc, firestoreCollection;
+        // Variabel Global
+        window.allDataGaji = {};
+        window.currentTahun = '2026';
+        window.mainChartType = 'bar';
+        window.chartInstance = null;
+        window.compChartInstance = null;
+        window.formMode = 'add'; 
+        window.monthToDelete = '';
+        window.yearToDelete = '';
+        
         let userId = null;
+        let db = null;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'salary-dash-v1';
 
-        import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js").then(async (firebaseApp) => {
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-            const app = firebaseApp.initializeApp(firebaseConfig);
-            
-            const firebaseAuth = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
-            const auth = firebaseAuth.getAuth(app);
-            
-            const fs = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-            db = fs.getFirestore(app);
-            firestoreCollection = fs.collection;
-            firestoreDoc = fs.doc;
-            firestoreSetDoc = fs.setDoc;
-            firestoreDeleteDoc = fs.deleteDoc;
+        Chart.defaults.color = '#94a3b8'; 
+        Chart.defaults.font.family = 'Inter';
 
-            // Autentikasi di balik layar (menautkan data ke browser ini saja)
-            if (typeof __initial_auth_token !== 'undefined') {
-                await firebaseAuth.signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await firebaseAuth.signInAnonymously(auth);
-            }
-            userId = auth.currentUser?.uid;
-
-            if (userId) {
-                const gajiRef = firestoreCollection(db, 'artifacts', appId, 'users', userId, 'gaji');
-                fs.onSnapshot(gajiRef, (snapshot) => {
-                    allDataGaji = {}; // Reset state lokal
-                    snapshot.forEach(d => {
-                        const data = d.data();
-                        if (!allDataGaji[data.tahun_asal]) {
-                            allDataGaji[data.tahun_asal] = [];
-                        }
-                        allDataGaji[data.tahun_asal].push(data);
-                    });
-                    // Pastikan data yang dimuat ulang terurut
-                    Object.keys(allDataGaji).forEach(tahun => {
-                        allDataGaji[tahun].sort((a, b) => monthOrder[a.bulan] - monthOrder[b.bulan]);
-                    });
-                    updateDashboard(currentTahun);
-                }, (error) => {
-                    console.error("Gagal sinkronisasi data:", error);
-                });
-            }
-        }).catch(err => console.log("Berjalan tanpa penyimpanan persisten."));
-        // ------------------------------------------------------------------
-
-        // Format Rupiah
-        const formatRupiah = (number) => {
-            return new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(number);
-        };
-
-        // Data Kosong yang siap diisi
-        let allDataGaji = {
-            "2026": [],
-            "2025": [],
-            "2024": []
-        };
-
-        // Urutan bulan untuk sorting
         const monthOrder = {
             'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4,
             'Mei': 5, 'Juni': 6, 'Juli': 7, 'Agustus': 8,
             'September': 9, 'Oktober': 10, 'November': 11, 'Desember': 12
         };
 
-        // State Aplikasi
-        let currentTahun = document.getElementById('tahunSelect').value || '2026';
-        let mainChartType = 'bar';
-        let chartInstance = null;
-        let compChartInstance = null;
-        
-        let formMode = 'add'; // 'add' atau 'edit'
-        let monthToDelete = '';
-        let yearToDelete = '';
+        const formatRupiah = (number) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0
+            }).format(number);
+        };
 
-        Chart.defaults.color = '#94a3b8'; // slate-400
-        Chart.defaults.font.family = 'Inter';
+        // Inisialisasi Firebase & Penyimpanan Perangkat
+        async function initApp() {
+            try {
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+                if (!firebaseConfig) {
+                    window.updateDashboard(window.currentTahun); 
+                    return;
+                }
 
-        // Fungsi Pembaruan Dashboard (Render Chart & Tabel)
-        function updateDashboard(tahun) {
-            currentTahun = tahun;
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                userId = auth.currentUser?.uid;
+
+                if (userId) {
+                    const gajiRef = collection(db, 'artifacts', appId, 'users', userId, 'gaji');
+                    onSnapshot(gajiRef, (snapshot) => {
+                        window.allDataGaji = {}; // Reset data
+                        snapshot.forEach(d => {
+                            const data = d.data();
+                            const thn = data.tahun_asal;
+                            if (!window.allDataGaji[thn]) window.allDataGaji[thn] = [];
+                            window.allDataGaji[thn].push(data);
+                        });
+                        
+                        // Sort Data
+                        Object.keys(window.allDataGaji).forEach(tahun => {
+                            window.allDataGaji[tahun].sort((a, b) => monthOrder[a.bulan] - monthOrder[b.bulan]);
+                        });
+
+                        window.updateYearDropdown();
+                        window.updateDashboard(window.currentTahun);
+                    }, (error) => {
+                        console.error("Gagal sinkronisasi data:", error);
+                    });
+                }
+            } catch (err) {
+                console.log("Menjalankan dalam mode lokal karena gagal terhubung ke penyimpanan.");
+                window.updateDashboard(window.currentTahun);
+            }
+        }
+
+        window.updateYearDropdown = function() {
+            const select = document.getElementById('tahunSelect');
+            const currentVal = window.currentTahun;
             
-            // Kumpulkan data (satu tahun atau semua tahun)
+            const yearsSet = new Set(['2026', '2025', '2024']);
+            Object.keys(window.allDataGaji).forEach(y => yearsSet.add(y));
+            
+            const sortedYears = Array.from(yearsSet).sort((a,b) => b - a);
+            
+            let optionsHtml = '<option value="semua">Semua Tahun</option>';
+            sortedYears.forEach(y => {
+                optionsHtml += `<option value="${y}" ${y === currentVal ? 'selected' : ''}>Tahun ${y}</option>`;
+            });
+            
+            select.innerHTML = optionsHtml;
+            
+            if (!sortedYears.includes(currentVal) && currentVal !== 'semua') {
+                window.currentTahun = sortedYears.length > 0 ? sortedYears[0] : '2026';
+                select.value = window.currentTahun;
+            } else {
+                select.value = currentVal;
+            }
+        };
+
+        window.handleYearChange = function(e) {
+            window.currentTahun = e.target.value;
+            window.updateDashboard(window.currentTahun);
+        };
+
+        window.changeChartType = function(type) {
+            window.mainChartType = type;
+            document.getElementById('btn-bar').className = type === 'bar' ? "px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors" : "px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors";
+            document.getElementById('btn-line').className = type === 'line' ? "px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors" : "px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors";
+            window.updateDashboard(window.currentTahun);
+        };
+
+        window.updateDashboard = function(tahun) {
             let dataToDisplay = [];
-            if (currentTahun === 'semua') {
-                Object.keys(allDataGaji).forEach(y => {
-                    allDataGaji[y].forEach(item => {
+            
+            if (tahun === 'semua') {
+                Object.keys(window.allDataGaji).forEach(y => {
+                    window.allDataGaji[y].forEach(item => {
                         dataToDisplay.push({ ...item, tahun_asal: y });
                     });
                 });
             } else {
-                if (allDataGaji[currentTahun]) {
-                    dataToDisplay = allDataGaji[currentTahun].map(item => ({ ...item, tahun_asal: currentTahun }));
+                if (window.allDataGaji[tahun]) {
+                    dataToDisplay = window.allDataGaji[tahun].map(item => ({ ...item, tahun_asal: tahun }));
                 }
             }
 
@@ -417,15 +452,9 @@
                 return monthOrder[a.bulan] - monthOrder[b.bulan];
             });
             
-            let totalGajiSemua = 0;
-            let maxGaji = 0;
-            let maxBulan = '-';
-            let totalBonusTahunan = 0;
+            let totalGajiSemua = 0, maxGaji = 0, maxBulan = '-', totalBonusTahunan = 0;
+            const labels = [], dataBersih = [];
             
-            const labels = [];
-            const dataBersih = [];
-            
-            // Variabel untuk Table
             let htmlRows = '';
             let sumPokok = 0, sumTunjangan = 0, sumBonus = 0, sumPotongan = 0, sumBersih = 0;
             let sumKomposisiPokok = 0, sumKomposisiTunjangan = 0, sumKomposisiBonus = 0;
@@ -434,7 +463,6 @@
                 dataToDisplay.forEach(item => {
                     const totalBersih = (item.gajiPokok + item.tunjangan + item.bonus) - item.potongan;
                     
-                    // Kalkulasi Summary
                     totalGajiSemua += totalBersih;
                     totalBonusTahunan += item.bonus;
                     
@@ -444,20 +472,15 @@
 
                     if(totalBersih > maxGaji) {
                         maxGaji = totalBersih;
-                        maxBulan = currentTahun === 'semua' ? `${item.bulan} ${item.tahun_asal}` : item.bulan;
+                        maxBulan = tahun === 'semua' ? `${item.bulan} ${item.tahun_asal}` : item.bulan;
                     }
 
-                    // Kalkulasi Chart Utama
                     const labelBulan = item.bulan.substring(0, 3);
-                    labels.push(currentTahun === 'semua' ? `${labelBulan} '${item.tahun_asal.substring(2)}` : labelBulan);
+                    labels.push(tahun === 'semua' ? `${labelBulan} '${item.tahun_asal.substring(2)}` : labelBulan);
                     dataBersih.push(totalBersih);
 
-                    // Kalkulasi Table
-                    sumPokok += item.gajiPokok;
-                    sumTunjangan += item.tunjangan;
-                    sumBonus += item.bonus;
-                    sumPotongan += item.potongan;
-                    sumBersih += totalBersih;
+                    sumPokok += item.gajiPokok; sumTunjangan += item.tunjangan;
+                    sumBonus += item.bonus; sumPotongan += item.potongan; sumBersih += totalBersih;
 
                     htmlRows += `
                         <tr class="hover:bg-slate-700/30 transition-colors group">
@@ -469,10 +492,10 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-white text-right">${formatRupiah(totalBersih)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                                 <div class="flex justify-center gap-2">
-                                    <button onclick="openFormModal('edit', '${item.bulan}', '${item.tahun_asal}')" title="Edit Data ${item.bulan} ${item.tahun_asal}" class="text-slate-400 hover:text-indigo-400 bg-slate-800 hover:bg-indigo-500/10 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors">
+                                    <button onclick="window.openFormModal('edit', '${item.bulan}', '${item.tahun_asal}')" title="Edit Data ${item.bulan}" class="text-slate-400 hover:text-indigo-400 bg-slate-800 hover:bg-indigo-500/10 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
-                                    <button onclick="confirmDelete('${item.bulan}', '${item.tahun_asal}')" title="Hapus Data ${item.bulan} ${item.tahun_asal}" class="text-slate-400 hover:text-rose-400 bg-slate-800 hover:bg-rose-500/10 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors">
+                                    <button onclick="window.confirmDelete('${item.bulan}', '${item.tahun_asal}')" title="Hapus Data ${item.bulan}" class="text-slate-400 hover:text-rose-400 bg-slate-800 hover:bg-rose-500/10 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </div>
@@ -486,21 +509,18 @@
                         <td colspan="7" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center">
                                 <i class="fa-solid fa-folder-open text-4xl text-slate-600 mb-3"></i>
-                                <p class="text-slate-400 font-medium text-lg">Belum ada data ${currentTahun === 'semua' ? 'yang dicatat' : `untuk tahun ${currentTahun}`}</p>
-                                <p class="text-sm text-slate-500 mt-1">Klik tombol "Tambah Data" untuk mulai mencatat pendapatan Anda.</p>
+                                <p class="text-slate-400 font-medium text-lg">Belum ada data ${tahun === 'semua' ? 'yang dicatat' : `untuk tahun ${tahun}`}</p>
                             </div>
                         </td>
                     </tr>
                 `;
             }
 
-            // Update Summary DOM
             document.getElementById('total-gaji').textContent = formatRupiah(totalGajiSemua);
             document.getElementById('rata-gaji').textContent = formatRupiah(dataToDisplay.length > 0 ? totalGajiSemua / dataToDisplay.length : 0);
             document.getElementById('bulan-tertinggi').textContent = maxBulan;
             document.getElementById('total-bonus').textContent = formatRupiah(totalBonusTahunan);
 
-            // Update Table DOM
             document.getElementById('table-body').innerHTML = htmlRows;
             
             if (dataToDisplay.length > 0) {
@@ -519,23 +539,22 @@
                 document.getElementById('table-foot').innerHTML = '';
             }
 
-            // Render Main Chart
             const ctx = document.getElementById('mainChart').getContext('2d');
-            if (chartInstance) {
-                chartInstance.destroy();
+            if (window.chartInstance) {
+                window.chartInstance.destroy();
             }
 
-            chartInstance = new Chart(ctx, {
-                type: mainChartType,
+            window.chartInstance = new Chart(ctx, {
+                type: window.mainChartType,
                 data: {
-                    labels: labels,
+                    labels: labels.length > 0 ? labels : ['-'],
                     datasets: [{
                         label: 'Gaji Bersih',
-                        data: dataBersih,
-                        backgroundColor: mainChartType === 'bar' ? '#6366f1' : 'rgba(99, 102, 241, 0.1)', 
+                        data: dataBersih.length > 0 ? dataBersih : [0],
+                        backgroundColor: window.mainChartType === 'bar' ? '#6366f1' : 'rgba(99, 102, 241, 0.1)', 
                         borderColor: '#818cf8', 
                         borderWidth: 2,
-                        borderRadius: mainChartType === 'bar' ? 4 : 0,
+                        borderRadius: window.mainChartType === 'bar' ? 4 : 0,
                         fill: true,
                         tension: 0.4,
                         pointBackgroundColor: '#fff',
@@ -575,33 +594,68 @@
                             }
                         },
                         x: {
-                            grid: { display: false, drawBorder: false },
-                            ticks: {
-                                maxRotation: currentTahun === 'semua' ? 45 : 0, 
-                                minRotation: currentTahun === 'semua' ? 45 : 0
-                            }
+                            grid: { display: false, drawBorder: false }
                         }
                     }
                 }
             });
-        }
 
-        // Chart Toggle Button
-        function changeChartType(type) {
-            mainChartType = type;
-            document.getElementById('btn-bar').className = type === 'bar' ? "px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors" : "px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors";
-            document.getElementById('btn-line').className = type === 'line' ? "px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors" : "px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors";
-            updateDashboard(currentTahun);
-        }
+            const ctxComp = document.getElementById('compositionChart').getContext('2d');
+            if (window.compChartInstance) {
+                window.compChartInstance.destroy();
+            }
 
-        // Dropdown Event
-        document.getElementById('tahunSelect').addEventListener('change', (e) => {
-            updateDashboard(e.target.value);
-        });
+            if (sumKomposisiPokok > 0 || sumKomposisiTunjangan > 0 || sumKomposisiBonus > 0) {
+                window.compChartInstance = new Chart(ctxComp, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Gaji Pokok', 'Tunjangan', 'Bonus/THR'],
+                        datasets: [{
+                            data: [sumKomposisiPokok, sumKomposisiTunjangan, sumKomposisiBonus],
+                            backgroundColor: ['#6366f1', '#10b981', '#f59e0b'],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: '#94a3b8' }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return ' ' + formatRupiah(context.raw);
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            } else {
+                 window.compChartInstance = new Chart(ctxComp, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Belum ada data'],
+                        datasets: [{
+                            data: [1], backgroundColor: ['#334155'], borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                        cutout: '70%'
+                    }
+                });
+            }
+        };
 
-        // ===================== MODAL ADD & EDIT =====================
-        function openFormModal(mode, bulan = '', tahun = '') {
-            formMode = mode;
+        window.openFormModal = function(mode, bulan = '', tahun = '') {
+            window.formMode = mode;
             const inputTahun = document.getElementById('input-tahun');
             const selectBulan = document.getElementById('input-bulan');
             const inputPokok = document.getElementById('input-gaji-pokok');
@@ -609,34 +663,26 @@
             const inputBonus = document.getElementById('input-bonus');
             const inputPotongan = document.getElementById('input-potongan');
 
-            // Hapus pesan error jika ada
             document.getElementById('error-gaji').classList.add('hidden');
             inputPokok.classList.remove('border-rose-500');
 
             if (mode === 'add') {
                 document.getElementById('modal-title').innerText = `Tambah Data Gaji`;
-                
                 inputTahun.disabled = false;
-                // Jika sedang memilih 'semua', default tahun form jadi tahun berjalan
-                inputTahun.value = currentTahun === 'semua' ? new Date().getFullYear().toString() : currentTahun; 
-                
+                inputTahun.value = window.currentTahun === 'semua' ? new Date().getFullYear().toString() : window.currentTahun; 
                 selectBulan.disabled = false;
                 selectBulan.value = 'Januari';
                 
-                inputPokok.value = '';
-                inputTunjangan.value = '';
-                inputBonus.value = '';
-                inputPotongan.value = '';
+                inputPokok.value = ''; inputTunjangan.value = '';
+                inputBonus.value = ''; inputPotongan.value = '';
             } else {
                 document.getElementById('modal-title').innerText = `Edit Data - ${bulan} ${tahun}`;
-                
                 inputTahun.value = tahun;
-                inputTahun.disabled = true; // Kunci tahun saat edit
-                
+                inputTahun.disabled = true; 
                 selectBulan.value = bulan;
-                selectBulan.disabled = true; // Kunci bulan saat edit
+                selectBulan.disabled = true; 
                 
-                const dataBulan = allDataGaji[tahun].find(item => item.bulan === bulan);
+                const dataBulan = (window.allDataGaji[tahun] || []).find(item => item.bulan === bulan);
                 if (dataBulan) {
                     inputPokok.value = dataBulan.gajiPokok || '';
                     inputTunjangan.value = dataBulan.tunjangan || '';
@@ -644,24 +690,27 @@
                     inputPotongan.value = dataBulan.potongan || '';
                 }
             }
-
             document.getElementById('form-modal').classList.remove('hidden');
-        }
+        };
 
-        function closeFormModal() {
+        window.closeFormModal = function() {
             document.getElementById('form-modal').classList.add('hidden');
-        }
+        };
 
-        function saveFormData() {
-            const tahun = document.getElementById('input-tahun').value;
+        window.saveFormData = function() {
+            const tahun = document.getElementById('input-tahun').value.trim();
             const bulan = document.getElementById('input-bulan').value;
             const gajiPokok = parseInt(document.getElementById('input-gaji-pokok').value, 10);
             const tunjangan = parseInt(document.getElementById('input-tunjangan').value, 10) || 0;
             const bonus = parseInt(document.getElementById('input-bonus').value, 10) || 0;
             const potongan = parseInt(document.getElementById('input-potongan').value, 10) || 0;
 
-            // Validasi Input
-            if (!gajiPokok || gajiPokok <= 0 || isNaN(gajiPokok)) {
+            if (!tahun) {
+                alert("Tahun tidak boleh kosong!");
+                return;
+            }
+
+            if (isNaN(gajiPokok) || gajiPokok < 0 || document.getElementById('input-gaji-pokok').value === '') {
                 document.getElementById('error-gaji').classList.remove('hidden');
                 document.getElementById('input-gaji-pokok').classList.add('border-rose-500');
                 document.getElementById('input-gaji-pokok').focus();
@@ -676,108 +725,94 @@
                 potongan: potongan
             };
 
-            // Inisialisasi array tahun jika belum ada
-            if (!allDataGaji[tahun]) {
-                allDataGaji[tahun] = [];
+            if (!window.allDataGaji[tahun]) {
+                window.allDataGaji[tahun] = [];
             }
 
-            const existingIndex = allDataGaji[tahun].findIndex(item => item.bulan === bulan);
+            const existingIndex = window.allDataGaji[tahun].findIndex(item => item.bulan === bulan);
 
-            if (formMode === 'add') {
-                if (existingIndex !== -1) {
-                    allDataGaji[tahun][existingIndex] = newData;
-                } else {
-                    allDataGaji[tahun].push(newData);
-                }
-            } else if (formMode === 'edit' && existingIndex !== -1) {
-                allDataGaji[tahun][existingIndex] = newData;
+            if (window.formMode === 'add') {
+                if (existingIndex !== -1) window.allDataGaji[tahun][existingIndex] = newData;
+                else window.allDataGaji[tahun].push(newData);
+            } else if (window.formMode === 'edit' && existingIndex !== -1) {
+                window.allDataGaji[tahun][existingIndex] = newData;
             }
 
-            // Simpan ke Penyimpanan Perangkat (Otomatis)
-            if (typeof userId !== 'undefined' && userId && db) {
+            // Simpan ke Penyimpanan Perangkat
+            if (userId && db) {
                 const docId = `${tahun}-${bulan}`;
-                const docRef = firestoreDoc(db, 'artifacts', appId, 'users', userId, 'gaji', docId);
-                firestoreSetDoc(docRef, { ...newData, tahun_asal: tahun });
+                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'gaji', docId);
+                setDoc(docRef, { ...newData, tahun_asal: tahun }).catch(err => console.error(err));
             }
 
-            allDataGaji[tahun].sort((a, b) => monthOrder[a.bulan] - monthOrder[b.bulan]);
+            window.allDataGaji[tahun].sort((a, b) => monthOrder[a.bulan] - monthOrder[b.bulan]);
 
-            // Jika menambah data di tahun baru dan dashboard sedang menampilkan tahun yang spesifik (bukan 'semua'),
-            // ubah view dashboard ke tahun yang baru diinput.
-            if (formMode === 'add' && currentTahun !== 'semua' && currentTahun !== tahun) {
-                 document.getElementById('tahunSelect').value = tahun;
-                 currentTahun = tahun;
+            if (window.formMode === 'add' && window.currentTahun !== 'semua' && window.currentTahun !== tahun) {
+                 window.currentTahun = tahun;
             }
 
-            closeFormModal();
-            updateDashboard(currentTahun); 
-        }
+            window.closeFormModal();
+            window.updateYearDropdown();
+            window.updateDashboard(window.currentTahun); 
+        };
 
-        // ===================== MODAL HAPUS =====================
-        function confirmDelete(bulan, tahun) {
-            monthToDelete = bulan;
-            yearToDelete = tahun;
+        window.confirmDelete = function(bulan, tahun) {
+            window.monthToDelete = bulan;
+            window.yearToDelete = tahun;
             document.getElementById('delete-month-name').innerText = `${bulan} ${tahun}`;
             document.getElementById('delete-modal').classList.remove('hidden');
-        }
+        };
 
-        function closeDeleteModal() {
+        window.closeDeleteModal = function() {
             document.getElementById('delete-modal').classList.add('hidden');
-            monthToDelete = '';
-            yearToDelete = '';
-        }
+            window.monthToDelete = '';
+            window.yearToDelete = '';
+        };
 
-        function executeDelete() {
-            if (monthToDelete && yearToDelete) {
-                allDataGaji[yearToDelete] = allDataGaji[yearToDelete].filter(item => item.bulan !== monthToDelete);
+        window.executeDelete = function() {
+            if (window.monthToDelete && window.yearToDelete) {
+                if (window.allDataGaji[window.yearToDelete]) {
+                     window.allDataGaji[window.yearToDelete] = window.allDataGaji[window.yearToDelete].filter(item => item.bulan !== window.monthToDelete);
+                }
                 
-                // Hapus dari Penyimpanan Perangkat (Otomatis)
-                if (typeof userId !== 'undefined' && userId && db) {
-                    const docId = `${yearToDelete}-${monthToDelete}`;
-                    const docRef = firestoreDoc(db, 'artifacts', appId, 'users', userId, 'gaji', docId);
-                    firestoreDeleteDoc(docRef);
+                if (userId && db) {
+                    const docId = `${window.yearToDelete}-${window.monthToDelete}`;
+                    const docRef = doc(db, 'artifacts', appId, 'users', userId, 'gaji', docId);
+                    deleteDoc(docRef).catch(err => console.error(err));
                 }
 
-                closeDeleteModal();
-                updateDashboard(currentTahun);
+                window.closeDeleteModal();
+                window.updateDashboard(window.currentTahun);
             }
-        }
+        };
 
-        // ===================== EXPORT CSV =====================
-        function downloadCSV() {
+        window.downloadCSV = function() {
             let dataToExport = [];
             
-            if (currentTahun === 'semua') {
-                Object.keys(allDataGaji).forEach(y => {
-                    allDataGaji[y].forEach(item => {
+            if (window.currentTahun === 'semua') {
+                Object.keys(window.allDataGaji).forEach(y => {
+                    window.allDataGaji[y].forEach(item => {
                         dataToExport.push({ ...item, tahun_asal: y });
                     });
                 });
             } else {
-                if (allDataGaji[currentTahun]) {
-                    dataToExport = allDataGaji[currentTahun].map(item => ({ ...item, tahun_asal: currentTahun }));
+                if (window.allDataGaji[window.currentTahun]) {
+                    dataToExport = window.allDataGaji[window.currentTahun].map(item => ({ ...item, tahun_asal: window.currentTahun }));
                 }
             }
 
-            if(dataToExport.length === 0) {
-                // Jangan unduh jika kosong
-                return;
-            }
+            if(dataToExport.length === 0) return;
             
-            // Sort data untuk CSV
             dataToExport.sort((a, b) => {
                 if (a.tahun_asal !== b.tahun_asal) return parseInt(a.tahun_asal) - parseInt(b.tahun_asal);
                 return monthOrder[a.bulan] - monthOrder[b.bulan];
             });
 
             let csvContent = "data:text/csv;charset=utf-8,";
-            
-            // Header CSV lebih rapih dan ditambahkan kolom Tahun
             csvContent += "Tahun,Bulan,Gaji Pokok,Tunjangan,Bonus/THR,Potongan,Total Bersih\n";
             
             dataToExport.forEach(row => {
                 const totalBersih = (row.gajiPokok + row.tunjangan + row.bonus) - row.potongan;
-                // Menggunakan angka mentah agar format rapih dan bisa dijumlahkan otomatis di Excel
                 const rowData = [row.tahun_asal, row.bulan, row.gajiPokok, row.tunjangan, row.bonus, row.potongan, totalBersih];
                 csvContent += rowData.join(",") + "\n";
             });
@@ -785,17 +820,14 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            
-            const fileName = currentTahun === 'semua' ? 'Laporan_Gaji_Keseluruhan.csv' : `Laporan_Gaji_${currentTahun}.csv`;
-            link.setAttribute("download", fileName);
-            
+            link.setAttribute("download", window.currentTahun === 'semua' ? 'Laporan_Gaji_Semua.csv' : `Laporan_Gaji_${window.currentTahun}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        }
+        };
 
-        // Initialize dashboard on first load
-        updateDashboard(currentTahun);
+        // Mulai aplikasi
+        initApp();
     </script>
 </body>
 </html>
