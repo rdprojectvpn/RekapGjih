@@ -223,37 +223,37 @@
                                 <h3 class="text-lg font-semibold leading-6 text-white" id="modal-title">Tambah Data</h3>
                                 <p class="text-sm text-slate-400 mt-1">Masukkan nominal tanpa tanda titik atau koma.</p>
                                 <div class="mt-5 space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-slate-400 mb-1">Bulan</label>
-                                        <select id="input-bulan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
-                                            <option value="Januari">Januari</option>
-                                            <option value="Februari">Februari</option>
-                                            <option value="Maret">Maret</option>
-                                            <option value="April">April</option>
-                                            <option value="Mei">Mei</option>
-                                            <option value="Juni">Juni</option>
-                                            <option value="Juli">Juli</option>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-1">Tahun <span class="text-rose-500">*</span></label>
+                                            <input type="number" id="input-tahun" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors" placeholder="2026">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-400 mb-1">Bulan <span class="text-rose-500">*</span></label>
+                                            <select id="input-bulan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
+                                                <option value="Januari">Januari</option>
+                                                <option value="Februari">Februari</option>
                                             <option value="Agustus">Agustus</option>
-                                            <option value="September">September</option>
-                                            <option value="Oktober">Oktober</option>
-                                            <option value="November">November</option>
-                                            <option value="Desember">Desember</option>
-                                        </select>
+                                                <option value="November">November</option>
+                                                <option value="Desember">Desember</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-slate-400 mb-1">Gaji Pokok (Rp)</label>
+                                        <label class="block text-sm font-medium text-slate-400 mb-1">Gaji Pokok (Rp) <span class="text-rose-500">*</span></label>
                                         <input type="number" id="input-gaji-pokok" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors" placeholder="0">
+                                        <p id="error-gaji" class="text-rose-500 text-xs mt-1 hidden">Gaji Pokok wajib diisi dengan angka.</p>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-slate-400 mb-1">Tunjangan (Rp)</label>
+                                        <label class="block text-sm font-medium text-slate-400 mb-1">Tunjangan (Rp) <span class="text-slate-500 font-normal text-xs">(Opsional)</span></label>
                                         <input type="number" id="input-tunjangan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors" placeholder="0">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-slate-400 mb-1">Bonus / THR (Rp)</label>
+                                        <label class="block text-sm font-medium text-slate-400 mb-1">Bonus / THR (Rp) <span class="text-slate-500 font-normal text-xs">(Opsional)</span></label>
                                         <input type="number" id="input-bonus" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors" placeholder="0">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-slate-400 mb-1">Potongan (Rp)</label>
+                                        <label class="block text-sm font-medium text-slate-400 mb-1">Potongan (Rp) <span class="text-slate-500 font-normal text-xs">(Opsional)</span></label>
                                         <input type="number" id="input-potongan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors" placeholder="0">
                                     </div>
                                 </div>
@@ -654,16 +654,27 @@
 
         function saveFormData() {
             const tahun = document.getElementById('input-tahun').value;
+            const bulan = document.getElementById('input-bulan').value;
+            const gajiPokok = parseInt(document.getElementById('input-gaji-pokok').value, 10);
+            const tunjangan = parseInt(document.getElementById('input-tunjangan').value, 10) || 0;
             const bonus = parseInt(document.getElementById('input-bonus').value, 10) || 0;
             const potongan = parseInt(document.getElementById('input-potongan').value, 10) || 0;
 
             // Validasi Input
-            if (!gajiPokok || gajiPokok <= 0) {
+            if (!gajiPokok || gajiPokok <= 0 || isNaN(gajiPokok)) {
                 document.getElementById('error-gaji').classList.remove('hidden');
                 document.getElementById('input-gaji-pokok').classList.add('border-rose-500');
                 document.getElementById('input-gaji-pokok').focus();
                 return;
             }
+            
+            const newData = {
+                bulan: bulan,
+                gajiPokok: gajiPokok,
+                tunjangan: tunjangan,
+                bonus: bonus,
+                potongan: potongan
+            };
 
             // Inisialisasi array tahun jika belum ada
             if (!allDataGaji[tahun]) {
