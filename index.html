@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Grafik Gaji</title>
+    <title>SalaryDash Pro - Asisten Keuangan Pintar</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,20 +26,16 @@
         }
         
         /* Custom Scrollbar for dark theme */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Progress bar animation */
+        @keyframes fillProgress {
+            from { width: 0; }
         }
-        ::-webkit-scrollbar-track {
-            background: #1e293b; /* slate-800 */ 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #475569; /* slate-600 */ 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #64748b; /* slate-500 */ 
-        }
+        .progress-animate { animation: fillProgress 1s ease-out forwards; }
     </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col">
@@ -47,21 +43,32 @@
     <!-- Navbar -->
     <nav class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
+            <div class="flex flex-col sm:flex-row justify-between h-auto sm:h-16 items-center py-3 sm:py-0 gap-3 sm:gap-0">
                 <div class="flex items-center gap-3">
-                    <div class="bg-indigo-500 p-2 rounded-lg">
+                    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg shadow-lg">
                         <i class="fa-solid fa-wallet text-white text-xl"></i>
                     </div>
-                    <h1 class="text-xl font-bold text-white tracking-tight">Salary<span class="text-indigo-400">Dash</span></h1>
+                    <h1 class="text-xl font-bold text-white tracking-tight">Salary<span class="text-indigo-400">Dash</span> <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30 align-middle ml-1">PRO</span></h1>
                 </div>
-                <div class="flex items-center gap-4">
-                    <label for="tahunSelect" class="text-sm font-medium text-slate-400 hidden sm:block">Periode:</label>
-                    <select id="tahunSelect" onchange="window.handleYearChange(event)" class="bg-slate-900 border border-slate-700 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-2.5 outline-none transition-colors">
-                        <option value="semua">Semua Tahun</option>
-                        <option value="2026" selected>Tahun 2026</option>
-                        <option value="2025">Tahun 2025</option>
-                        <option value="2024">Tahun 2024</option>
-                    </select>
+                <div class="flex flex-wrap items-center gap-3 justify-center">
+                    <!-- Filter Pemilik (Double Income) -->
+                    <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-1">
+                        <i class="fa-solid fa-users text-slate-400 ml-2 text-sm"></i>
+                        <select id="pemilikFilter" onchange="window.handleFilterChange()" class="bg-transparent text-white text-sm focus:ring-0 focus:outline-none block p-1.5 cursor-pointer">
+                            <option value="saya">Gaji Saya</option>
+                            <option value="pasangan">Gaji Pasangan</option>
+                            <option value="gabungan">Gabungan (Keluarga)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Filter Tahun -->
+                    <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg p-1">
+                        <i class="fa-regular fa-calendar text-slate-400 ml-2 text-sm"></i>
+                        <select id="tahunSelect" onchange="window.handleFilterChange()" class="bg-transparent text-white text-sm focus:ring-0 focus:outline-none block p-1.5 cursor-pointer">
+                            <option value="semua">Semua Tahun</option>
+                            <!-- Options dipopulate oleh JS -->
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -72,7 +79,6 @@
         
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Card 1 -->
             <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-sm relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                 <div class="flex items-center gap-4 relative z-10">
@@ -80,13 +86,12 @@
                         <i class="fa-solid fa-sack-dollar text-indigo-400 text-xl"></i>
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-slate-400">Total Gaji Bersih YTD</p>
+                        <p class="text-sm font-medium text-slate-400">Total Gaji Bersih</p>
                         <h3 class="text-2xl font-bold text-white mt-1 truncate" id="total-gaji">Rp 0</h3>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 2 -->
             <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-sm relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                 <div class="flex items-center gap-4 relative z-10">
@@ -100,7 +105,6 @@
                 </div>
             </div>
 
-            <!-- Card 3 -->
             <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-sm relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-amber-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                 <div class="flex items-center gap-4 relative z-10">
@@ -114,7 +118,6 @@
                 </div>
             </div>
 
-            <!-- Card 4 -->
             <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-sm relative overflow-hidden group">
                 <div class="absolute right-0 top-0 w-24 h-24 bg-purple-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                 <div class="flex items-center gap-4 relative z-10">
@@ -129,62 +132,107 @@
             </div>
         </div>
 
+        <!-- Smart Assistant Insights -->
+        <div class="mb-8 bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl border border-indigo-500/30 shadow-lg overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+            <div class="p-5 border-b border-slate-700/50 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-robot text-indigo-400 text-xl"></i>
+                    <h2 class="text-lg font-bold text-white">Analisis Cerdas (Bulan Terakhir)</h2>
+                </div>
+                <span id="insight-month" class="text-xs font-semibold bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/30">Belum ada data</span>
+            </div>
+            
+            <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10" id="insight-container">
+                <!-- Data kosong akan diisi oleh JS -->
+                <div class="col-span-3 text-center text-slate-400 py-4"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Menunggu data...</div>
+            </div>
+        </div>
+
+        <!-- Smart Calculators Menu -->
+        <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-toolbox text-slate-400"></i> Alat Finansial</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <button onclick="window.openCalc('kredit')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 p-4 rounded-xl text-left transition-all group hover:border-blue-500 shadow-sm flex flex-col items-start gap-3">
+                <div class="bg-blue-500/20 p-3 rounded-lg text-blue-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-shield-halved text-xl"></i></div>
+                <div>
+                    <h4 class="font-bold text-white text-sm">Kredit Sehat</h4>
+                    <p class="text-xs text-slate-400 mt-1">Simulasi batas aman cicilan</p>
+                </div>
+            </button>
+            <button onclick="window.openCalc('darurat')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 p-4 rounded-xl text-left transition-all group hover:border-emerald-500 shadow-sm flex flex-col items-start gap-3">
+                <div class="bg-emerald-500/20 p-3 rounded-lg text-emerald-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-umbrella text-xl"></i></div>
+                <div>
+                    <h4 class="font-bold text-white text-sm">Dana Darurat</h4>
+                    <p class="text-xs text-slate-400 mt-1">Kalkulator target tabungan aman</p>
+                </div>
+            </button>
+            <button onclick="window.openCalc('wishlist')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 p-4 rounded-xl text-left transition-all group hover:border-pink-500 shadow-sm flex flex-col items-start gap-3">
+                <div class="bg-pink-500/20 p-3 rounded-lg text-pink-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-crosshairs text-xl"></i></div>
+                <div>
+                    <h4 class="font-bold text-white text-sm">Target & Impian</h4>
+                    <p class="text-xs text-slate-400 mt-1">Kapan barang terbeli?</p>
+                </div>
+            </button>
+            <button onclick="window.openCalc('pajak')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 p-4 rounded-xl text-left transition-all group hover:border-amber-500 shadow-sm flex flex-col items-start gap-3">
+                <div class="bg-amber-500/20 p-3 rounded-lg text-amber-400 group-hover:scale-110 transition-transform"><i class="fa-solid fa-file-invoice-dollar text-xl"></i></div>
+                <div>
+                    <h4 class="font-bold text-white text-sm">Simulasi BPJS</h4>
+                    <p class="text-xs text-slate-400 mt-1">Gaji kotor ke gaji bersih</p>
+                </div>
+            </button>
+        </div>
+
         <!-- Charts Section -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Main Chart (Bar/Line) -->
             <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-sm p-6 lg:col-span-2">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
                         <h2 class="text-lg font-bold text-white">Tren Gaji Bersih</h2>
-                        <p class="text-sm text-slate-400">Pergerakan pendapatan bersih per bulan</p>
+                        <p class="text-sm text-slate-400">Pergerakan pendapatan per bulan</p>
                     </div>
                     <div class="flex bg-slate-900 rounded-lg p-1 border border-slate-700">
-                        <button onclick="window.changeChartType('bar')" id="btn-bar" class="px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors">
-                            <i class="fa-solid fa-chart-simple mr-1"></i> Bar
-                        </button>
-                        <button onclick="window.changeChartType('line')" id="btn-line" class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors">
-                            <i class="fa-solid fa-chart-line mr-1"></i> Line
-                        </button>
+                        <button onclick="window.changeChartType('bar')" id="btn-bar" class="px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors">Bar</button>
+                        <button onclick="window.changeChartType('line')" id="btn-line" class="px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors">Line</button>
                     </div>
                 </div>
-                <div class="relative h-72 w-full">
-                    <canvas id="mainChart"></canvas>
-                </div>
+                <div class="relative h-72 w-full"><canvas id="mainChart"></canvas></div>
             </div>
 
-            <!-- Composition Chart (Doughnut) -->
-            <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-sm p-6 lg:col-span-1">
+            <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-sm p-6 lg:col-span-1 flex flex-col">
                 <div>
-                    <h2 class="text-lg font-bold text-white">Komposisi Pendapatan</h2>
+                    <h2 class="text-lg font-bold text-white">Komposisi</h2>
                     <p class="text-sm text-slate-400">Distribusi sumber pendapatan</p>
                 </div>
-                <div class="relative h-64 w-full mt-6 flex justify-center items-center">
+                <div class="relative flex-grow w-full mt-4 flex justify-center items-center min-h-[200px]">
                     <canvas id="compositionChart"></canvas>
                 </div>
             </div>
         </div>
 
         <!-- Table Section -->
-        <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-sm overflow-hidden">
+        <div class="bg-slate-800 rounded-xl border border-slate-700 shadow-sm overflow-hidden mb-8">
             <div class="px-6 py-5 border-b border-slate-700 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-800/50">
                 <div>
                     <h2 class="text-lg font-bold text-white">Rincian Komponen Gaji</h2>
-                    <p class="text-sm text-slate-400">Kelola dan lihat detail pendapatan bulanan Anda</p>
+                    <p class="text-sm text-slate-400" id="table-subtitle">Kelola dan lihat detail pendapatan Anda</p>
                 </div>
-                <div class="flex gap-3">
+                <div class="flex flex-wrap gap-3">
                     <button onclick="window.openFormModal('add')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2 border border-indigo-500">
-                        <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Tambah Data</span>
+                        <i class="fa-solid fa-plus"></i> <span>Tambah Data</span>
+                    </button>
+                    <button onclick="window.openImportModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2 border border-emerald-500">
+                        <i class="fa-solid fa-file-import"></i> <span>Import CSV</span>
                     </button>
                     <button onclick="window.downloadCSV()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-600 flex items-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Unduh CSV</span>
+                        <i class="fa-solid fa-download"></i> <span>Unduh CSV</span>
                     </button>
                 </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
-                    <thead class="bg-slate-900/80">
+                    <thead class="bg-slate-900/80 border-b border-slate-700">
                         <tr>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Periode</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Periode / Pemilik</th>
                             <th scope="col" class="px-6 py-4 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Gaji Pokok</th>
                             <th scope="col" class="px-6 py-4 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Tunjangan</th>
                             <th scope="col" class="px-6 py-4 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Bonus/THR</th>
@@ -207,10 +255,7 @@
 
     <!-- Modal Add/Edit Data -->
     <div id="form-modal" class="fixed inset-0 z-[100] hidden">
-        <!-- Backdrop -->
         <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" onclick="window.closeFormModal()"></div>
-        
-        <!-- Modal Panel -->
         <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
                 <div class="relative transform overflow-hidden rounded-xl bg-slate-800 border border-slate-700 text-left shadow-xl transition-all sm:my-8 w-full sm:max-w-md">
@@ -221,92 +266,137 @@
                             </div>
                             <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
                                 <h3 class="text-lg font-semibold leading-6 text-white" id="modal-title">Tambah Data</h3>
-                                <p class="text-sm text-slate-400 mt-1">Masukkan nominal tanpa tanda titik atau koma.</p>
                                 <div class="mt-5 space-y-4">
+                                    <!-- Pemilik -->
+                                    <div id="div-input-pemilik">
+                                        <label class="block text-sm font-medium text-slate-400 mb-1">Sumber Gaji <span class="text-rose-500">*</span></label>
+                                        <select id="input-pemilik" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
+                                            <option value="saya">Gaji Saya</option>
+                                            <option value="pasangan">Gaji Pasangan</option>
+                                        </select>
+                                    </div>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
                                             <label class="block text-sm font-medium text-slate-400 mb-1">Tahun <span class="text-rose-500">*</span></label>
-                                            <input type="number" id="input-tahun" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors" placeholder="2026">
+                                            <input type="number" id="input-tahun" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500" placeholder="2026">
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-slate-400 mb-1">Bulan <span class="text-rose-500">*</span></label>
-                                            <select id="input-bulan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors">
-                                                <option value="Januari">Januari</option>
-                                                <option value="Februari">Februari</option>
-                                                <option value="Maret">Maret</option>
-                                                <option value="April">April</option>
-                                                <option value="Mei">Mei</option>
-                                                <option value="Juni">Juni</option>
-                                                <option value="Juli">Juli</option>
-                                                <option value="Agustus">Agustus</option>
-                                                <option value="September">September</option>
-                                                <option value="Oktober">Oktober</option>
-                                                <option value="November">November</option>
-                                                <option value="Desember">Desember</option>
+                                            <select id="input-bulan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500">
+                                                <option value="Januari">Januari</option><option value="Februari">Februari</option>
+                                                <option value="Maret">Maret</option><option value="April">April</option>
+                                                <option value="Mei">Mei</option><option value="Juni">Juni</option>
+                                                <option value="Juli">Juli</option><option value="Agustus">Agustus</option>
+                                                <option value="September">September</option><option value="Oktober">Oktober</option>
+                                                <option value="November">November</option><option value="Desember">Desember</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-slate-400 mb-1">Gaji Pokok (Rp) <span class="text-rose-500">*</span></label>
-                                        <input type="number" id="input-gaji-pokok" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors" placeholder="0">
+                                        <input type="number" id="input-gaji-pokok" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500" placeholder="0">
                                         <p id="error-gaji" class="text-rose-500 text-xs mt-1 hidden">Gaji Pokok wajib diisi dengan angka valid.</p>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-slate-400 mb-1">Tunjangan (Rp) <span class="text-slate-500 font-normal text-xs">(Opsional)</span></label>
-                                        <input type="number" id="input-tunjangan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors" placeholder="0">
+                                        <label class="block text-sm font-medium text-slate-400 mb-1">Tunjangan (Rp)</label>
+                                        <input type="number" id="input-tunjangan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500" placeholder="0">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-slate-400 mb-1">Bonus / THR (Rp) <span class="text-slate-500 font-normal text-xs">(Opsional)</span></label>
-                                        <input type="number" id="input-bonus" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors" placeholder="0">
+                                        <label class="block text-sm font-medium text-slate-400 mb-1">Bonus / THR (Rp)</label>
+                                        <input type="number" id="input-bonus" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500" placeholder="0">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-slate-400 mb-1">Potongan (Rp) <span class="text-slate-500 font-normal text-xs">(Opsional)</span></label>
-                                        <input type="number" id="input-potongan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors" placeholder="0">
+                                        <label class="block text-sm font-medium text-slate-400 mb-1">Potongan (Rp)</label>
+                                        <input type="number" id="input-potongan" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500" placeholder="0">
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="bg-slate-900/80 border-t border-slate-700 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" onclick="window.saveFormData()" class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto transition-colors border border-indigo-500">Simpan Data</button>
-                        <button type="button" onclick="window.closeFormModal()" class="mt-3 inline-flex w-full justify-center rounded-lg bg-transparent px-4 py-2 text-sm font-semibold text-slate-400 border border-slate-600 shadow-sm hover:text-white hover:bg-slate-700 sm:mt-0 sm:w-auto transition-colors">Batal</button>
+                        <button type="button" onclick="window.saveFormData()" class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto border border-indigo-500">Simpan Data</button>
+                        <button type="button" onclick="window.closeFormModal()" class="mt-3 inline-flex w-full justify-center rounded-lg bg-transparent px-4 py-2 text-sm font-semibold text-slate-400 border border-slate-600 hover:text-white hover:bg-slate-700 sm:mt-0 sm:w-auto">Batal</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Konfirmasi Hapus -->
+    <!-- Modal Delete -->
     <div id="delete-modal" class="fixed inset-0 z-[100] hidden">
         <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" onclick="window.closeDeleteModal()"></div>
         <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-                <div class="relative transform overflow-hidden rounded-xl bg-slate-800 border border-slate-700 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm">
+                <div class="relative transform overflow-hidden rounded-xl bg-slate-800 border border-slate-700 text-left shadow-xl w-full sm:max-w-sm">
                     <div class="bg-slate-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
-                            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-rose-500/20 sm:mx-0 sm:h-10 sm:w-10">
+                            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-rose-500/20 sm:mx-0 sm:h-10 sm:w-10">
                                 <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
                             </div>
                             <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                                <h3 class="text-lg font-semibold leading-6 text-white" id="delete-modal-title">Hapus Data</h3>
-                                <p class="text-sm text-slate-400 mt-2">Apakah Anda yakin ingin menghapus data gaji bulan <span id="delete-month-name" class="font-bold text-white"></span>? Tindakan ini tidak dapat dibatalkan.</p>
+                                <h3 class="text-lg font-semibold text-white">Hapus Data</h3>
+                                <p class="text-sm text-slate-400 mt-2">Yakin menghapus data <span id="delete-info" class="font-bold text-white"></span>?</p>
                             </div>
                         </div>
                     </div>
                     <div class="bg-slate-900/80 border-t border-slate-700 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" onclick="window.executeDelete()" class="inline-flex w-full justify-center rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 sm:ml-3 sm:w-auto transition-colors border border-rose-600">Hapus</button>
-                        <button type="button" onclick="window.closeDeleteModal()" class="mt-3 inline-flex w-full justify-center rounded-lg bg-transparent px-4 py-2 text-sm font-semibold text-slate-400 border border-slate-600 shadow-sm hover:text-white hover:bg-slate-700 sm:mt-0 sm:w-auto transition-colors">Batal</button>
+                        <button type="button" onclick="window.executeDelete()" class="inline-flex w-full justify-center rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 sm:ml-3 sm:w-auto">Hapus</button>
+                        <button type="button" onclick="window.closeDeleteModal()" class="mt-3 inline-flex w-full justify-center rounded-lg bg-transparent px-4 py-2 text-sm text-slate-400 border border-slate-600 hover:text-white sm:mt-0 sm:w-auto">Batal</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer class="border-t border-slate-800 mt-12 py-8 bg-slate-900 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-slate-500 text-sm">
-                &copy; <span id="current-year"></span> SalaryDash. Dibuat untuk privasi, data aman di perangkat Anda.
-            </p>
+    <!-- Container Modal Kalkulator Pintar (Diinjeksi via JS) -->
+    <div id="calc-modal-container"></div>
+
+    <!-- Modal Import CSV -->
+    <div id="import-modal" class="fixed inset-0 z-[100] hidden">
+        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" onclick="window.closeImportModal()"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-xl bg-slate-800 border border-slate-700 text-left shadow-xl transition-all sm:my-8 w-full sm:max-w-md">
+                    <div class="bg-slate-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 sm:mx-0 sm:h-10 sm:w-10">
+                                <i class="fa-solid fa-file-import text-emerald-400"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                                <h3 class="text-lg font-semibold leading-6 text-white">Import Data (CSV)</h3>
+                                <div class="mt-4 space-y-3">
+                                    <p class="text-sm text-slate-400">Unggah file CSV yang telah didownload sebelumnya untuk memulihkan atau menambahkan data secara massal.</p>
+                                    <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-700">
+                                        <p class="text-xs text-slate-500 mb-1">Format kolom harus berurutan:</p>
+                                        <code class="text-[10px] text-emerald-400 break-words">Tahun,Bulan,Sumber,Gaji Pokok,Tunjangan,Bonus/THR,Potongan,Total Bersih</code>
+                                    </div>
+                                    <div class="mt-4 flex items-center justify-center w-full">
+                                        <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-600 border-dashed rounded-lg cursor-pointer bg-slate-700/20 hover:bg-slate-700/50 transition-colors group">
+                                            <div class="flex flex-col items-center justify-center pt-5 pb-6 group-hover:scale-105 transition-transform">
+                                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 mb-2 group-hover:text-emerald-400 transition-colors"></i>
+                                                <p class="mb-1 text-sm text-slate-300 font-medium">Klik untuk pilih file .csv</p>
+                                            </div>
+                                            <input id="dropzone-file" type="file" accept=".csv" class="hidden" onchange="window.handleFileSelect(event)" />
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/80 border-t border-slate-700 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" onclick="window.closeImportModal()" class="mt-3 inline-flex w-full justify-center rounded-lg bg-transparent px-4 py-2 text-sm font-semibold text-slate-400 border border-slate-600 hover:text-white hover:bg-slate-700 sm:mt-0 sm:w-auto">Batal / Tutup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+    <footer class="border-t border-slate-800 py-8 bg-slate-900 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-slate-500 text-sm">&copy; <span id="current-year"></span> SalaryDash PRO. Data tersimpan aman di perangkat Anda.</p>
         </div>
     </footer>
 
@@ -317,19 +407,20 @@
 
         document.getElementById('current-year').textContent = new Date().getFullYear();
 
-        // Variabel Global
-        window.allDataGaji = {};
-        window.currentTahun = '2026';
+        // State Global
+        window.rawData = []; // Array of objects
+        window.currentTahun = new Date().getFullYear().toString();
+        window.currentPemilik = 'saya'; // saya, pasangan, gabungan
         window.mainChartType = 'bar';
         window.chartInstance = null;
         window.compChartInstance = null;
+        
         window.formMode = 'add'; 
-        window.monthToDelete = '';
-        window.yearToDelete = '';
+        window.deleteTarget = null; // object {pemilik, tahun, bulan}
         
         let userId = null;
         let db = null;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'salary-dash-v1';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'salary-dash-pro-v2';
 
         Chart.defaults.color = '#94a3b8'; 
         Chart.defaults.font.family = 'Inter';
@@ -340,20 +431,13 @@
             'September': 9, 'Oktober': 10, 'November': 11, 'Desember': 12
         };
 
-        const formatRupiah = (number) => {
-            return new Intl.NumberFormat('id-ID', {
-                style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0
-            }).format(number);
-        };
+        const formatRp = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0);
 
-        // Inisialisasi Firebase & Penyimpanan Perangkat
+        // Init App & Firebase
         async function initApp() {
             try {
                 const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-                if (!firebaseConfig) {
-                    window.updateDashboard(window.currentTahun); 
-                    return;
-                }
+                if (!firebaseConfig) { window.renderDashboard(); return; }
 
                 const app = initializeApp(firebaseConfig);
                 const auth = getAuth(app);
@@ -368,158 +452,149 @@
                 userId = auth.currentUser?.uid;
 
                 if (userId) {
-                    const gajiRef = collection(db, 'artifacts', appId, 'users', userId, 'gaji');
+                    const gajiRef = collection(db, 'artifacts', appId, 'users', userId, 'gajipro');
                     onSnapshot(gajiRef, (snapshot) => {
-                        window.allDataGaji = {}; // Reset data
+                        window.rawData = [];
                         snapshot.forEach(d => {
                             const data = d.data();
-                            const thn = data.tahun_asal;
-                            if (!window.allDataGaji[thn]) window.allDataGaji[thn] = [];
-                            window.allDataGaji[thn].push(data);
+                            // Backwards compatibility
+                            if(!data.pemilik) data.pemilik = 'saya'; 
+                            window.rawData.push(data);
                         });
-                        
-                        // Sort Data
-                        Object.keys(window.allDataGaji).forEach(tahun => {
-                            window.allDataGaji[tahun].sort((a, b) => monthOrder[a.bulan] - monthOrder[b.bulan]);
-                        });
-
                         window.updateYearDropdown();
-                        window.updateDashboard(window.currentTahun);
-                    }, (error) => {
-                        console.error("Gagal sinkronisasi data:", error);
-                    });
+                        window.renderDashboard();
+                    }, (error) => console.error("Sync error:", error));
                 }
             } catch (err) {
-                console.log("Menjalankan dalam mode lokal karena gagal terhubung ke penyimpanan.");
-                window.updateDashboard(window.currentTahun);
+                console.log("Local Mode");
+                window.renderDashboard();
             }
         }
 
         window.updateYearDropdown = function() {
             const select = document.getElementById('tahunSelect');
-            const currentVal = window.currentTahun;
-            
-            const yearsSet = new Set(['2026', '2025', '2024']);
-            Object.keys(window.allDataGaji).forEach(y => yearsSet.add(y));
+            const yearsSet = new Set([new Date().getFullYear().toString()]);
+            window.rawData.forEach(item => yearsSet.add(item.tahun_asal));
             
             const sortedYears = Array.from(yearsSet).sort((a,b) => b - a);
-            
             let optionsHtml = '<option value="semua">Semua Tahun</option>';
             sortedYears.forEach(y => {
-                optionsHtml += `<option value="${y}" ${y === currentVal ? 'selected' : ''}>Tahun ${y}</option>`;
+                optionsHtml += `<option value="${y}" ${y === window.currentTahun ? 'selected' : ''}>Tahun ${y}</option>`;
             });
-            
             select.innerHTML = optionsHtml;
-            
-            if (!sortedYears.includes(currentVal) && currentVal !== 'semua') {
-                window.currentTahun = sortedYears.length > 0 ? sortedYears[0] : '2026';
-                select.value = window.currentTahun;
-            } else {
-                select.value = currentVal;
+            select.value = window.currentTahun;
+        };
+
+        window.handleFilterChange = function() {
+            window.currentPemilik = document.getElementById('pemilikFilter').value;
+            window.currentTahun = document.getElementById('tahunSelect').value;
+            window.renderDashboard();
+        };
+
+        window.getProcessedData = function() {
+            // 1. Filter by Tahun
+            let filtered = window.rawData;
+            if (window.currentTahun !== 'semua') {
+                filtered = filtered.filter(item => item.tahun_asal === window.currentTahun);
             }
-        };
 
-        window.handleYearChange = function(e) {
-            window.currentTahun = e.target.value;
-            window.updateDashboard(window.currentTahun);
-        };
-
-        window.changeChartType = function(type) {
-            window.mainChartType = type;
-            document.getElementById('btn-bar').className = type === 'bar' ? "px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors" : "px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors";
-            document.getElementById('btn-line').className = type === 'line' ? "px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors" : "px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors";
-            window.updateDashboard(window.currentTahun);
-        };
-
-        window.updateDashboard = function(tahun) {
-            let dataToDisplay = [];
-            
-            if (tahun === 'semua') {
-                Object.keys(window.allDataGaji).forEach(y => {
-                    window.allDataGaji[y].forEach(item => {
-                        dataToDisplay.push({ ...item, tahun_asal: y });
-                    });
+            // 2. Filter by Pemilik or Aggregate
+            let processed = [];
+            if (window.currentPemilik === 'gabungan') {
+                let map = {};
+                filtered.forEach(item => {
+                    let key = `${item.tahun_asal}-${item.bulan}`;
+                    if (!map[key]) {
+                        map[key] = {
+                            tahun_asal: item.tahun_asal, bulan: item.bulan,
+                            gajiPokok: 0, tunjangan: 0, bonus: 0, potongan: 0,
+                            pemilik: 'gabungan'
+                        };
+                    }
+                    map[key].gajiPokok += (item.gajiPokok || 0);
+                    map[key].tunjangan += (item.tunjangan || 0);
+                    map[key].bonus += (item.bonus || 0);
+                    map[key].potongan += (item.potongan || 0);
                 });
+                processed = Object.values(map);
             } else {
-                if (window.allDataGaji[tahun]) {
-                    dataToDisplay = window.allDataGaji[tahun].map(item => ({ ...item, tahun_asal: tahun }));
-                }
+                processed = filtered.filter(item => item.pemilik === window.currentPemilik);
             }
 
-            // Urutkan berdasarkan Tahun kemudian Bulan
-            dataToDisplay.sort((a, b) => {
+            // 3. Sort chronologically
+            processed.sort((a, b) => {
                 if (a.tahun_asal !== b.tahun_asal) return parseInt(a.tahun_asal) - parseInt(b.tahun_asal);
                 return monthOrder[a.bulan] - monthOrder[b.bulan];
             });
+
+            return processed;
+        };
+
+        window.renderDashboard = function() {
+            const dataToDisplay = window.getProcessedData();
             
-            let totalGajiSemua = 0, maxGaji = 0, maxBulan = '-', totalBonusTahunan = 0;
+            // Subtitle text
+            let pName = window.currentPemilik === 'saya' ? 'Anda' : (window.currentPemilik === 'pasangan' ? 'Pasangan Anda' : 'Keluarga Anda');
+            document.getElementById('table-subtitle').innerText = `Kelola dan lihat detail pendapatan ${pName}`;
+            
+            let totalBersihAll = 0, maxGaji = 0, maxBulan = '-', totalBonusAll = 0;
+            let sumPokok = 0, sumTunjangan = 0, sumBonus = 0, sumPotongan = 0;
             const labels = [], dataBersih = [];
-            
             let htmlRows = '';
-            let sumPokok = 0, sumTunjangan = 0, sumBonus = 0, sumPotongan = 0, sumBersih = 0;
-            let sumKomposisiPokok = 0, sumKomposisiTunjangan = 0, sumKomposisiBonus = 0;
 
-            if (dataToDisplay.length > 0) {
-                dataToDisplay.forEach(item => {
-                    const totalBersih = (item.gajiPokok + item.tunjangan + item.bonus) - item.potongan;
-                    
-                    totalGajiSemua += totalBersih;
-                    totalBonusTahunan += item.bonus;
-                    
-                    sumKomposisiPokok += item.gajiPokok;
-                    sumKomposisiTunjangan += item.tunjangan;
-                    sumKomposisiBonus += item.bonus;
+            dataToDisplay.forEach(item => {
+                const totalBersih = (item.gajiPokok + item.tunjangan + item.bonus) - item.potongan;
+                totalBersihAll += totalBersih;
+                totalBonusAll += item.bonus;
+                
+                sumPokok += item.gajiPokok; sumTunjangan += item.tunjangan;
+                sumBonus += item.bonus; sumPotongan += item.potongan;
 
-                    if(totalBersih > maxGaji) {
-                        maxGaji = totalBersih;
-                        maxBulan = tahun === 'semua' ? `${item.bulan} ${item.tahun_asal}` : item.bulan;
-                    }
+                if(totalBersih > maxGaji) {
+                    maxGaji = totalBersih;
+                    maxBulan = window.currentTahun === 'semua' ? `${item.bulan} ${item.tahun_asal}` : item.bulan;
+                }
 
-                    const labelBulan = item.bulan.substring(0, 3);
-                    labels.push(tahun === 'semua' ? `${labelBulan} '${item.tahun_asal.substring(2)}` : labelBulan);
-                    dataBersih.push(totalBersih);
+                const labelBulan = item.bulan.substring(0, 3);
+                labels.push(window.currentTahun === 'semua' ? `${labelBulan} '${item.tahun_asal.substring(2)}` : labelBulan);
+                dataBersih.push(totalBersih);
 
-                    sumPokok += item.gajiPokok; sumTunjangan += item.tunjangan;
-                    sumBonus += item.bonus; sumPotongan += item.potongan; sumBersih += totalBersih;
+                let badgePemilik = '';
+                if(window.currentPemilik === 'gabungan') badgePemilik = `<span class="bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded text-xs ml-2 border border-indigo-500/30">Suami+Istri</span>`;
+                else if(window.currentPemilik === 'pasangan') badgePemilik = `<span class="bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded text-xs ml-2 border border-pink-500/30">Pasangan</span>`;
+                else badgePemilik = `<span class="bg-slate-700 text-slate-300 px-2 py-0.5 rounded text-xs ml-2 border border-slate-600">Saya</span>`;
 
-                    htmlRows += `
-                        <tr class="hover:bg-slate-700/30 transition-colors group">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-200">${item.bulan} ${item.tahun_asal}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400 text-right group-hover:text-slate-300">${formatRupiah(item.gajiPokok)}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400 text-right group-hover:text-slate-300">${item.tunjangan > 0 ? formatRupiah(item.tunjangan) : '-'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right ${item.bonus > 0 ? 'text-amber-400 font-medium' : 'text-slate-500'}">${item.bonus > 0 ? formatRupiah(item.bonus) : '-'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right ${item.potongan > 0 ? 'text-rose-400/80 group-hover:text-rose-400' : 'text-slate-500'}">${item.potongan > 0 ? '-' + formatRupiah(item.potongan) : '-'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-white text-right">${formatRupiah(totalBersih)}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                htmlRows += `
+                    <tr class="hover:bg-slate-700/30 transition-colors group">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-200">
+                            ${item.bulan} ${item.tahun_asal} <br class="sm:hidden">${badgePemilik}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400 text-right">${formatRp(item.gajiPokok)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400 text-right">${item.tunjangan > 0 ? formatRp(item.tunjangan) : '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right ${item.bonus > 0 ? 'text-amber-400 font-medium' : 'text-slate-500'}">${item.bonus > 0 ? formatRp(item.bonus) : '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right ${item.potongan > 0 ? 'text-rose-400/80' : 'text-slate-500'}">${item.potongan > 0 ? '-' + formatRp(item.potongan) : '-'}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-white text-right">${formatRp(totalBersih)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                            ${window.currentPemilik === 'gabungan' ? '<span class="text-xs text-slate-500 italic">Edit di mode individu</span>' : `
                                 <div class="flex justify-center gap-2">
-                                    <button onclick="window.openFormModal('edit', '${item.bulan}', '${item.tahun_asal}')" title="Edit Data ${item.bulan}" class="text-slate-400 hover:text-indigo-400 bg-slate-800 hover:bg-indigo-500/10 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors">
-                                        <i class="fa-solid fa-pen-to-square"></i>
-                                    </button>
-                                    <button onclick="window.confirmDelete('${item.bulan}', '${item.tahun_asal}')" title="Hapus Data ${item.bulan}" class="text-slate-400 hover:text-rose-400 bg-slate-800 hover:bg-rose-500/10 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
+                                    <button onclick="window.openFormModal('edit', '${item.pemilik}', '${item.bulan}', '${item.tahun_asal}')" class="text-slate-400 hover:text-indigo-400 bg-slate-800 hover:bg-indigo-500/10 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="window.confirmDelete('${item.pemilik}', '${item.bulan}', '${item.tahun_asal}')" class="text-slate-400 hover:text-rose-400 bg-slate-800 hover:bg-rose-500/10 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors"><i class="fa-solid fa-trash"></i></button>
                                 </div>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } else {
-                htmlRows = `
-                    <tr>
-                        <td colspan="7" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center justify-center">
-                                <i class="fa-solid fa-folder-open text-4xl text-slate-600 mb-3"></i>
-                                <p class="text-slate-400 font-medium text-lg">Belum ada data ${tahun === 'semua' ? 'yang dicatat' : `untuk tahun ${tahun}`}</p>
-                            </div>
+                            `}
                         </td>
                     </tr>
                 `;
+            });
+
+            if (dataToDisplay.length === 0) {
+                htmlRows = `<tr><td colspan="7" class="px-6 py-12 text-center text-slate-400">Tidak ada data untuk filter ini.</td></tr>`;
             }
 
-            document.getElementById('total-gaji').textContent = formatRupiah(totalGajiSemua);
-            document.getElementById('rata-gaji').textContent = formatRupiah(dataToDisplay.length > 0 ? totalGajiSemua / dataToDisplay.length : 0);
+            document.getElementById('total-gaji').textContent = formatRp(totalBersihAll);
+            window.averageSalary = dataToDisplay.length > 0 ? totalBersihAll / dataToDisplay.length : 0; // Saved for calculators
+            document.getElementById('rata-gaji').textContent = formatRp(window.averageSalary);
             document.getElementById('bulan-tertinggi').textContent = maxBulan;
-            document.getElementById('total-bonus').textContent = formatRupiah(totalBonusTahunan);
+            document.getElementById('total-bonus').textContent = formatRp(totalBonusAll);
 
             document.getElementById('table-body').innerHTML = htmlRows;
             
@@ -527,22 +602,95 @@
                 document.getElementById('table-foot').innerHTML = `
                     <tr>
                         <td class="px-6 py-5 whitespace-nowrap text-sm font-bold text-white">TOTAL KESELURUHAN</td>
-                        <td class="px-6 py-5 whitespace-nowrap text-sm font-semibold text-slate-300 text-right">${formatRupiah(sumPokok)}</td>
-                        <td class="px-6 py-5 whitespace-nowrap text-sm font-semibold text-slate-300 text-right">${formatRupiah(sumTunjangan)}</td>
-                        <td class="px-6 py-5 whitespace-nowrap text-sm font-semibold text-amber-400 text-right">${formatRupiah(sumBonus)}</td>
-                        <td class="px-6 py-5 whitespace-nowrap text-sm font-semibold text-rose-500 text-right">-${formatRupiah(sumPotongan)}</td>
-                        <td class="px-6 py-5 whitespace-nowrap text-base font-bold text-indigo-400 text-right">${formatRupiah(sumBersih)}</td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm font-semibold text-slate-300 text-right">${formatRp(sumPokok)}</td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm font-semibold text-slate-300 text-right">${formatRp(sumTunjangan)}</td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm font-semibold text-amber-400 text-right">${formatRp(sumBonus)}</td>
+                        <td class="px-6 py-5 whitespace-nowrap text-sm font-semibold text-rose-500 text-right">-${formatRp(sumPotongan)}</td>
+                        <td class="px-6 py-5 whitespace-nowrap text-base font-bold text-indigo-400 text-right">${formatRp(totalBersihAll)}</td>
                         <td class="px-6 py-5"></td>
                     </tr>
                 `;
             } else {
                 document.getElementById('table-foot').innerHTML = '';
             }
+            
+            window.renderCharts(labels, dataBersih, sumPokok, sumTunjangan, sumBonus);
+            window.renderSmartInsights(dataToDisplay);
+        };
 
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            if (window.chartInstance) {
-                window.chartInstance.destroy();
+        window.renderSmartInsights = function(data) {
+            const container = document.getElementById('insight-container');
+            const monthLabel = document.getElementById('insight-month');
+            
+            if(data.length === 0) {
+                monthLabel.innerText = "Tidak ada data";
+                container.innerHTML = `<div class="col-span-3 text-center text-slate-400 py-4"><i class="fa-solid fa-circle-info mr-2"></i> Tambahkan gaji Anda untuk melihat analisis cerdas.</div>`;
+                return;
             }
+
+            // Ambil data bulan terakhir
+            const lastData = data[data.length - 1];
+            const netSalary = (lastData.gajiPokok + lastData.tunjangan + lastData.bonus) - lastData.potongan;
+            const grossSalary = lastData.gajiPokok + lastData.tunjangan + lastData.bonus; // Biasanya Zakat dari bruto
+            
+            monthLabel.innerText = `${lastData.bulan} ${lastData.tahun_asal}`;
+
+            // Kalkulasi
+            const dailyLimit = netSalary / 30; // Standard 30 days
+            const zakat = grossSalary * 0.025;
+            
+            const n50 = netSalary * 0.5;
+            const n30 = netSalary * 0.3;
+            const n20 = netSalary * 0.2;
+
+            container.innerHTML = `
+                <!-- 50/30/20 Card -->
+                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                    <h3 class="text-sm font-bold text-slate-300 mb-3 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-indigo-400"></i> Rekomendasi 50/30/20</h3>
+                    <div class="space-y-2">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">Kebutuhan (50%)</span><span class="text-white font-medium">${formatRp(n50)}</span></div>
+                            <div class="w-full bg-slate-800 rounded-full h-1.5"><div class="bg-indigo-500 h-1.5 rounded-full" style="width: 50%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">Keinginan (30%)</span><span class="text-white font-medium">${formatRp(n30)}</span></div>
+                            <div class="w-full bg-slate-800 rounded-full h-1.5"><div class="bg-pink-500 h-1.5 rounded-full" style="width: 30%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">Tabungan (20%)</span><span class="text-white font-medium">${formatRp(n20)}</span></div>
+                            <div class="w-full bg-slate-800 rounded-full h-1.5"><div class="bg-emerald-500 h-1.5 rounded-full" style="width: 20%"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Limit -->
+                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50 flex flex-col justify-center items-center text-center">
+                    <div class="bg-amber-500/10 p-3 rounded-full mb-2"><i class="fa-solid fa-calendar-day text-amber-400 text-xl"></i></div>
+                    <p class="text-xs font-medium text-slate-400">Batas Pengeluaran Harian</p>
+                    <h4 class="text-xl font-bold text-white mt-1">${formatRp(dailyLimit)} <span class="text-xs font-normal text-slate-500">/ hari</span></h4>
+                    <p class="text-[10px] text-slate-500 mt-1">Berdasarkan asumsi 30 hari/bulan</p>
+                </div>
+
+                <!-- Zakat -->
+                <div class="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50 flex flex-col justify-center items-center text-center">
+                    <div class="bg-emerald-500/10 p-3 rounded-full mb-2"><i class="fa-solid fa-hand-holding-dollar text-emerald-400 text-xl"></i></div>
+                    <p class="text-xs font-medium text-slate-400">Zakat Profesi / Sedekah (2.5%)</p>
+                    <h4 class="text-xl font-bold text-emerald-400 mt-1">${formatRp(zakat)}</h4>
+                    <p class="text-[10px] text-slate-500 mt-1">Dihitung dari penghasilan kotor</p>
+                </div>
+            `;
+        };
+
+        window.changeChartType = function(type) {
+            window.mainChartType = type;
+            document.getElementById('btn-bar').className = type === 'bar' ? "px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors" : "px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors";
+            document.getElementById('btn-line').className = type === 'line' ? "px-3 py-1.5 rounded-md text-sm font-medium bg-indigo-500 text-white transition-colors" : "px-3 py-1.5 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-colors";
+            window.renderDashboard();
+        };
+
+        window.renderCharts = function(labels, dataBersih, sumPokok, sumTunjangan, sumBonus) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            if (window.chartInstance) window.chartInstance.destroy();
 
             window.chartInstance = new Chart(ctx, {
                 type: window.mainChartType,
@@ -552,278 +700,476 @@
                         label: 'Gaji Bersih',
                         data: dataBersih.length > 0 ? dataBersih : [0],
                         backgroundColor: window.mainChartType === 'bar' ? '#6366f1' : 'rgba(99, 102, 241, 0.1)', 
-                        borderColor: '#818cf8', 
-                        borderWidth: 2,
+                        borderColor: '#818cf8', borderWidth: 2,
                         borderRadius: window.mainChartType === 'bar' ? 4 : 0,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#6366f1',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        fill: true, tension: 0.4,
+                        pointBackgroundColor: '#fff', pointBorderColor: '#6366f1', pointBorderWidth: 2, pointRadius: 4
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: '#1e293b',
-                            titleColor: '#f8fafc',
-                            bodyColor: '#cbd5e1',
-                            borderColor: '#334155',
-                            borderWidth: 1,
-                            padding: 12,
-                            callbacks: {
-                                label: function(context) {
-                                    return ' ' + formatRupiah(context.raw);
-                                }
-                            }
-                        }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: {
+                        backgroundColor: '#1e293b', titleColor: '#f8fafc', bodyColor: '#cbd5e1', padding: 12,
+                        callbacks: { label: function(c) { return ' ' + formatRp(c.raw); } }
+                    }},
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#334155', drawBorder: false }, 
-                            ticks: {
-                                callback: function(value) {
-                                    return value >= 1000000 ? 'Rp ' + (value / 1000000) + ' Jt' : 'Rp ' + value;
-                                }
-                            }
-                        },
-                        x: {
-                            grid: { display: false, drawBorder: false }
-                        }
+                        y: { beginAtZero: true, grid: { color: '#334155', drawBorder: false }, ticks: { callback: v => v >= 1000000 ? 'Rp ' + (v/1000000) + ' Jt' : 'Rp ' + v } },
+                        x: { grid: { display: false, drawBorder: false } }
                     }
                 }
             });
 
             const ctxComp = document.getElementById('compositionChart').getContext('2d');
-            if (window.compChartInstance) {
-                window.compChartInstance.destroy();
-            }
+            if (window.compChartInstance) window.compChartInstance.destroy();
 
-            if (sumKomposisiPokok > 0 || sumKomposisiTunjangan > 0 || sumKomposisiBonus > 0) {
+            if (sumPokok > 0 || sumTunjangan > 0 || sumBonus > 0) {
                 window.compChartInstance = new Chart(ctxComp, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Gaji Pokok', 'Tunjangan', 'Bonus/THR'],
-                        datasets: [{
-                            data: [sumKomposisiPokok, sumKomposisiTunjangan, sumKomposisiBonus],
-                            backgroundColor: ['#6366f1', '#10b981', '#f59e0b'],
-                            borderWidth: 0,
-                            hoverOffset: 4
-                        }]
+                        labels: ['Gaji Pokok', 'Tunjangan', 'Bonus'],
+                        datasets: [{ data: [sumPokok, sumTunjangan, sumBonus], backgroundColor: ['#6366f1', '#10b981', '#f59e0b'], borderWidth: 0 }]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: { color: '#94a3b8' }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return ' ' + formatRupiah(context.raw);
-                                    }
-                                }
-                            }
-                        },
-                        cutout: '70%'
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } }, tooltip: { callbacks: { label: c => ' ' + formatRp(c.raw) } } } }
                 });
             } else {
                  window.compChartInstance = new Chart(ctxComp, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Belum ada data'],
-                        datasets: [{
-                            data: [1], backgroundColor: ['#334155'], borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                        cutout: '70%'
-                    }
+                    type: 'doughnut', data: { labels: ['Kosong'], datasets: [{ data: [1], backgroundColor: ['#334155'], borderWidth: 0 }] },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
                 });
             }
         };
 
-        window.openFormModal = function(mode, bulan = '', tahun = '') {
+        window.openFormModal = function(mode, pemilik = 'saya', bulan = '', tahun = '') {
             window.formMode = mode;
-            const inputTahun = document.getElementById('input-tahun');
-            const selectBulan = document.getElementById('input-bulan');
-            const inputPokok = document.getElementById('input-gaji-pokok');
-            const inputTunjangan = document.getElementById('input-tunjangan');
-            const inputBonus = document.getElementById('input-bonus');
-            const inputPotongan = document.getElementById('input-potongan');
+            const elTahun = document.getElementById('input-tahun');
+            const elBulan = document.getElementById('input-bulan');
+            const elPemilik = document.getElementById('input-pemilik');
+            const divPemilik = document.getElementById('div-input-pemilik');
+            const elPokok = document.getElementById('input-gaji-pokok');
+            const elTunjangan = document.getElementById('input-tunjangan');
+            const elBonus = document.getElementById('input-bonus');
+            const elPotongan = document.getElementById('input-potongan');
 
             document.getElementById('error-gaji').classList.add('hidden');
-            inputPokok.classList.remove('border-rose-500');
+            elPokok.classList.remove('border-rose-500');
 
             if (mode === 'add') {
-                document.getElementById('modal-title').innerText = `Tambah Data Gaji`;
-                inputTahun.disabled = false;
-                inputTahun.value = window.currentTahun === 'semua' ? new Date().getFullYear().toString() : window.currentTahun; 
-                selectBulan.disabled = false;
-                selectBulan.value = 'Januari';
+                document.getElementById('modal-title').innerText = `Tambah Data`;
+                elTahun.disabled = false; elBulan.disabled = false; elPemilik.disabled = false;
+                divPemilik.classList.remove('hidden');
                 
-                inputPokok.value = ''; inputTunjangan.value = '';
-                inputBonus.value = ''; inputPotongan.value = '';
+                elTahun.value = window.currentTahun === 'semua' ? new Date().getFullYear().toString() : window.currentTahun; 
+                elBulan.value = 'Januari'; elPemilik.value = window.currentPemilik === 'gabungan' ? 'saya' : window.currentPemilik;
+                elPokok.value = ''; elTunjangan.value = ''; elBonus.value = ''; elPotongan.value = '';
             } else {
                 document.getElementById('modal-title').innerText = `Edit Data - ${bulan} ${tahun}`;
-                inputTahun.value = tahun;
-                inputTahun.disabled = true; 
-                selectBulan.value = bulan;
-                selectBulan.disabled = true; 
+                elTahun.value = tahun; elBulan.value = bulan; elPemilik.value = pemilik;
+                elTahun.disabled = true; elBulan.disabled = true; elPemilik.disabled = true;
+                divPemilik.classList.add('hidden'); // Sembunyikan pemilik saat edit agar tidak diubah
                 
-                const dataBulan = (window.allDataGaji[tahun] || []).find(item => item.bulan === bulan);
-                if (dataBulan) {
-                    inputPokok.value = dataBulan.gajiPokok || '';
-                    inputTunjangan.value = dataBulan.tunjangan || '';
-                    inputBonus.value = dataBulan.bonus || '';
-                    inputPotongan.value = dataBulan.potongan || '';
+                const dataEdit = window.rawData.find(i => i.tahun_asal === tahun && i.bulan === bulan && i.pemilik === pemilik);
+                if (dataEdit) {
+                    elPokok.value = dataEdit.gajiPokok || '';
+                    elTunjangan.value = dataEdit.tunjangan || '';
+                    elBonus.value = dataEdit.bonus || '';
+                    elPotongan.value = dataEdit.potongan || '';
                 }
             }
             document.getElementById('form-modal').classList.remove('hidden');
         };
 
-        window.closeFormModal = function() {
-            document.getElementById('form-modal').classList.add('hidden');
-        };
+        window.closeFormModal = () => document.getElementById('form-modal').classList.add('hidden');
 
         window.saveFormData = function() {
             const tahun = document.getElementById('input-tahun').value.trim();
             const bulan = document.getElementById('input-bulan').value;
+            const pemilik = document.getElementById('input-pemilik').value;
             const gajiPokok = parseInt(document.getElementById('input-gaji-pokok').value, 10);
-            const tunjangan = parseInt(document.getElementById('input-tunjangan').value, 10) || 0;
-            const bonus = parseInt(document.getElementById('input-bonus').value, 10) || 0;
-            const potongan = parseInt(document.getElementById('input-potongan').value, 10) || 0;
-
-            if (!tahun) {
-                alert("Tahun tidak boleh kosong!");
-                return;
-            }
-
+            
             if (isNaN(gajiPokok) || gajiPokok < 0 || document.getElementById('input-gaji-pokok').value === '') {
                 document.getElementById('error-gaji').classList.remove('hidden');
                 document.getElementById('input-gaji-pokok').classList.add('border-rose-500');
-                document.getElementById('input-gaji-pokok').focus();
                 return;
             }
             
             const newData = {
-                bulan: bulan,
+                tahun_asal: tahun, bulan: bulan, pemilik: pemilik,
                 gajiPokok: gajiPokok,
-                tunjangan: tunjangan,
-                bonus: bonus,
-                potongan: potongan
+                tunjangan: parseInt(document.getElementById('input-tunjangan').value, 10) || 0,
+                bonus: parseInt(document.getElementById('input-bonus').value, 10) || 0,
+                potongan: parseInt(document.getElementById('input-potongan').value, 10) || 0
             };
 
-            if (!window.allDataGaji[tahun]) {
-                window.allDataGaji[tahun] = [];
-            }
+            const index = window.rawData.findIndex(i => i.tahun_asal === tahun && i.bulan === bulan && i.pemilik === pemilik);
+            if (index !== -1) window.rawData[index] = newData;
+            else window.rawData.push(newData);
 
-            const existingIndex = window.allDataGaji[tahun].findIndex(item => item.bulan === bulan);
-
-            if (window.formMode === 'add') {
-                if (existingIndex !== -1) window.allDataGaji[tahun][existingIndex] = newData;
-                else window.allDataGaji[tahun].push(newData);
-            } else if (window.formMode === 'edit' && existingIndex !== -1) {
-                window.allDataGaji[tahun][existingIndex] = newData;
-            }
-
-            // Simpan ke Penyimpanan Perangkat
             if (userId && db) {
-                const docId = `${tahun}-${bulan}`;
-                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'gaji', docId);
-                setDoc(docRef, { ...newData, tahun_asal: tahun }).catch(err => console.error(err));
+                const docId = `${pemilik}-${tahun}-${bulan}`;
+                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'gajipro', docId);
+                setDoc(docRef, newData).catch(err => console.error(err));
             }
 
-            window.allDataGaji[tahun].sort((a, b) => monthOrder[a.bulan] - monthOrder[b.bulan]);
-
-            if (window.formMode === 'add' && window.currentTahun !== 'semua' && window.currentTahun !== tahun) {
-                 window.currentTahun = tahun;
-            }
-
+            if (window.formMode === 'add' && window.currentTahun !== 'semua') window.currentTahun = tahun;
+            if (window.formMode === 'add' && window.currentPemilik !== 'gabungan') window.currentPemilik = pemilik;
+            
             window.closeFormModal();
             window.updateYearDropdown();
-            window.updateDashboard(window.currentTahun); 
+            window.renderDashboard(); 
         };
 
-        window.confirmDelete = function(bulan, tahun) {
-            window.monthToDelete = bulan;
-            window.yearToDelete = tahun;
-            document.getElementById('delete-month-name').innerText = `${bulan} ${tahun}`;
+        window.confirmDelete = function(pemilik, bulan, tahun) {
+            window.deleteTarget = { pemilik, bulan, tahun };
+            let pName = pemilik === 'saya' ? 'Gaji Saya' : 'Gaji Pasangan';
+            document.getElementById('delete-info').innerText = `${bulan} ${tahun} (${pName})`;
             document.getElementById('delete-modal').classList.remove('hidden');
         };
 
-        window.closeDeleteModal = function() {
-            document.getElementById('delete-modal').classList.add('hidden');
-            window.monthToDelete = '';
-            window.yearToDelete = '';
-        };
+        window.closeDeleteModal = () => document.getElementById('delete-modal').classList.add('hidden');
 
         window.executeDelete = function() {
-            if (window.monthToDelete && window.yearToDelete) {
-                if (window.allDataGaji[window.yearToDelete]) {
-                     window.allDataGaji[window.yearToDelete] = window.allDataGaji[window.yearToDelete].filter(item => item.bulan !== window.monthToDelete);
-                }
+            if (window.deleteTarget) {
+                const { pemilik, bulan, tahun } = window.deleteTarget;
+                window.rawData = window.rawData.filter(i => !(i.tahun_asal === tahun && i.bulan === bulan && i.pemilik === pemilik));
                 
                 if (userId && db) {
-                    const docId = `${window.yearToDelete}-${window.monthToDelete}`;
-                    const docRef = doc(db, 'artifacts', appId, 'users', userId, 'gaji', docId);
+                    const docId = `${pemilik}-${tahun}-${bulan}`;
+                    const docRef = doc(db, 'artifacts', appId, 'users', userId, 'gajipro', docId);
                     deleteDoc(docRef).catch(err => console.error(err));
                 }
-
                 window.closeDeleteModal();
-                window.updateDashboard(window.currentTahun);
+                window.updateYearDropdown();
+                window.renderDashboard();
+                window.showToast('Data berhasil dihapus', 'success');
             }
         };
 
         window.downloadCSV = function() {
-            let dataToExport = [];
-            
-            if (window.currentTahun === 'semua') {
-                Object.keys(window.allDataGaji).forEach(y => {
-                    window.allDataGaji[y].forEach(item => {
-                        dataToExport.push({ ...item, tahun_asal: y });
-                    });
-                });
-            } else {
-                if (window.allDataGaji[window.currentTahun]) {
-                    dataToExport = window.allDataGaji[window.currentTahun].map(item => ({ ...item, tahun_asal: window.currentTahun }));
-                }
+            // Perbaikan: Jika mode gabungan, export data aslinya (saya & pasangan terpisah) agar aman saat di-import kembali
+            let data = window.currentPemilik === 'gabungan' 
+                ? window.rawData.filter(i => window.currentTahun === 'semua' || i.tahun_asal === window.currentTahun) 
+                : window.getProcessedData();
+                
+            if(data.length === 0) {
+                window.showToast('Tidak ada data untuk diunduh', 'error');
+                return;
             }
-
-            if(dataToExport.length === 0) return;
             
-            dataToExport.sort((a, b) => {
-                if (a.tahun_asal !== b.tahun_asal) return parseInt(a.tahun_asal) - parseInt(b.tahun_asal);
-                return monthOrder[a.bulan] - monthOrder[b.bulan];
+            let csv = "Tahun,Bulan,Sumber,Gaji Pokok,Tunjangan,Bonus/THR,Potongan,Total Bersih\n";
+            data.forEach(r => {
+                const total = (r.gajiPokok + r.tunjangan + r.bonus) - r.potongan;
+                csv += `${r.tahun_asal},${r.bulan},${r.pemilik},${r.gajiPokok},${r.tunjangan},${r.bonus},${r.potongan},${total}\n`;
             });
 
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Tahun,Bulan,Gaji Pokok,Tunjangan,Bonus/THR,Potongan,Total Bersih\n";
-            
-            dataToExport.forEach(row => {
-                const totalBersih = (row.gajiPokok + row.tunjangan + row.bonus) - row.potongan;
-                const rowData = [row.tahun_asal, row.bulan, row.gajiPokok, row.tunjangan, row.bonus, row.potongan, totalBersih];
-                csvContent += rowData.join(",") + "\n";
-            });
-
-            const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", window.currentTahun === 'semua' ? 'Laporan_Gaji_Semua.csv' : `Laporan_Gaji_${window.currentTahun}.csv`);
+            link.setAttribute("href", encodeURI("data:text/csv;charset=utf-8," + csv));
+            link.setAttribute("download", `Data_Gaji_${window.currentPemilik}_${window.currentTahun}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            
+            window.showToast('Berhasil mengunduh CSV', 'success');
+        };
+
+        // --- Fitur Toast & Import CSV ---
+        window.showToast = function(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-rose-500/20 border-rose-500/50 text-rose-400';
+            const icon = type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation';
+
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-lg border backdrop-blur-md shadow-lg transform transition-all duration-300 translate-y-10 opacity-0 bg-slate-900 ${bgClass}`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i> <span class="text-sm font-medium text-white">${message}</span>`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.remove('translate-y-10', 'opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        window.openImportModal = () => document.getElementById('import-modal').classList.remove('hidden');
+        window.closeImportModal = () => {
+            document.getElementById('import-modal').classList.add('hidden');
+            document.getElementById('dropzone-file').value = '';
+        };
+
+        window.handleFileSelect = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) { window.processCSV(e.target.result); };
+            reader.readAsText(file);
+        };
+
+        window.processCSV = function(csvText) {
+            // Deteksi jenis pemisah baris untuk menghindari error (Windows \r\n atau Mac/Linux \n)
+            const lines = csvText.replace(/\r/g, '').split('\n');
+            if (lines.length < 2) {
+                window.showToast('File CSV kosong atau format salah.', 'error');
+                return;
+            }
+            
+            let successCount = 0;
+            // Looping dimulai dari baris ke-2 (index 1) untuk melewati teks Header
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const cols = line.split(',');
+                // Pastikan kolom mencukupi
+                if (cols.length < 7) continue;
+
+                const tahun = cols[0].trim();
+                const bulan = cols[1].trim();
+                const pemilik = cols[2].trim().toLowerCase() === 'pasangan' ? 'pasangan' : 'saya';
+                const pokok = parseInt(cols[3]) || 0;
+                const tunjangan = parseInt(cols[4]) || 0;
+                const bonus = parseInt(cols[5]) || 0;
+                const potongan = parseInt(cols[6]) || 0;
+
+                // Cek Validasi Dasar (Pastikan Tahun, Bulan, dan Pokok bukan 0)
+                if (!tahun || !bulan || pokok <= 0) continue; 
+
+                const newData = {
+                    tahun_asal: tahun, bulan: bulan, pemilik: pemilik,
+                    gajiPokok: pokok, tunjangan: tunjangan, bonus: bonus, potongan: potongan
+                };
+
+                // Timpa data jika menemukan Bulan & Tahun & Pemilik yang sama (Update / Overwrite)
+                const index = window.rawData.findIndex(item => item.tahun_asal === tahun && item.bulan === bulan && item.pemilik === pemilik);
+                if (index !== -1) {
+                    window.rawData[index] = newData;
+                } else {
+                    window.rawData.push(newData);
+                }
+
+                // Sync ke penyimpanan (Lokal / Firebase)
+                if (userId && db) {
+                    const docId = `${pemilik}-${tahun}-${bulan}`;
+                    const docRef = doc(db, 'artifacts', appId, 'users', userId, 'gajipro', docId);
+                    setDoc(docRef, newData).catch(err => console.error(err));
+                }
+                successCount++;
+            }
+
+            if(successCount > 0) {
+                window.updateYearDropdown();
+                window.renderDashboard();
+                window.showToast(`Sukses! Berhasil mengimpor ${successCount} baris data gaji.`, 'success');
+            } else {
+                window.showToast('Gagal! Tidak ada data valid sesuai format.', 'error');
+            }
+            window.closeImportModal();
+        };
+
+        window.closeCalc = () => { document.getElementById('calc-modal-container').innerHTML = ''; };
+
+        window.openCalc = function(type) {
+            let title = "", icon = "", contentHtml = "", calcFunction = "";
+            let avg = window.averageSalary || 0;
+            let formattedAvg = formatRp(avg);
+
+            if(avg === 0) {
+                alert("Harap masukkan setidaknya 1 data gaji terlebih dahulu agar kalkulator dapat bekerja optimal.");
+                return;
+            }
+
+            if(type === 'kredit') {
+                title = "Kredit Sehat"; icon = "fa-shield-halved text-blue-400"; calcFunction = "runKredit()";
+                contentHtml = `
+                    <p class="text-sm text-slate-400 mb-4">Simulasikan apakah cicilan Anda aman berdasarkan rata-rata gaji Anda (${formattedAvg}).</p>
+                    <div class="space-y-3">
+                        <div><label class="text-xs text-slate-400">Nama Barang/Cicilan</label><input type="text" id="c-nama" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" placeholder="Misal: iPhone 15"></div>
+                        <div><label class="text-xs text-slate-400">Total Harga Barang (Rp)</label><input type="number" id="c-harga" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" placeholder="0"></div>
+                        <div><label class="text-xs text-slate-400">Tenor (Berapa Bulan)</label><input type="number" id="c-tenor" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" placeholder="12"></div>
+                    </div>
+                    <div id="c-result" class="mt-4 hidden p-4 rounded-lg text-center"></div>
+                `;
+            } 
+            else if(type === 'darurat') {
+                title = "Dana Darurat"; icon = "fa-umbrella text-emerald-400"; calcFunction = "runDarurat()";
+                // Asumsi pengeluaran = 50% gaji jika belum diisi
+                let defaultExpense = avg * 0.5;
+                contentHtml = `
+                    <p class="text-sm text-slate-400 mb-4">Hitung target dana darurat ideal untuk keamanan finansial.</p>
+                    <div class="space-y-3">
+                        <div><label class="text-xs text-slate-400">Status Pernikahan</label>
+                            <select id="c-status" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm">
+                                <option value="3">Lajang (3x Pengeluaran)</option>
+                                <option value="6">Menikah (6x Pengeluaran)</option>
+                                <option value="9">Menikah + Anak (9x - 12x Pengeluaran)</option>
+                            </select>
+                        </div>
+                        <div><label class="text-xs text-slate-400">Pengeluaran Bulanan (Rp) <span class="text-[10px]">*Estimasi awal: 50% gaji</span></label>
+                            <input type="number" id="c-pengeluaran" value="${defaultExpense}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm"></div>
+                        <div><label class="text-xs text-slate-400">Dana Terkumpul Saat Ini (Rp)</label><input type="number" id="c-terkumpul" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" placeholder="0"></div>
+                    </div>
+                    <div id="c-result" class="mt-4 hidden p-4 rounded-lg text-center border border-slate-700 bg-slate-900"></div>
+                `;
+            }
+            else if(type === 'wishlist') {
+                title = "Kapan Terbeli?"; icon = "fa-crosshairs text-pink-400"; calcFunction = "runWishlist()";
+                contentHtml = `
+                    <p class="text-sm text-slate-400 mb-4">Hitung berapa lama waktu untuk membeli barang impian Anda.</p>
+                    <div class="space-y-3">
+                        <div><label class="text-xs text-slate-400">Nama Impian</label><input type="text" id="c-nama" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" placeholder="Misal: DP Rumah"></div>
+                        <div><label class="text-xs text-slate-400">Harga Impian (Rp)</label><input type="number" id="c-harga" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" placeholder="0"></div>
+                        <div><label class="text-xs text-slate-400">Rencana Tabung per Bulan (Rp)</label><input type="number" id="c-tabung" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm" placeholder="0"></div>
+                    </div>
+                    <div id="c-result" class="mt-4 hidden p-4 rounded-lg border border-slate-700 bg-slate-900 text-center"></div>
+                `;
+            }
+            else if(type === 'pajak') {
+                title = "Simulasi BPJS (Gaji Kotor)"; icon = "fa-file-invoice-dollar text-amber-400"; calcFunction = "runPajak()";
+                contentHtml = `
+                    <p class="text-sm text-slate-400 mb-4">Hitung estimasi potongan standar BPJS jika Anda mendapat tawaran gaji kotor baru.</p>
+                    <div class="space-y-3">
+                        <div><label class="text-xs text-slate-400">Tawaran Gaji Kotor/Bruto (Rp)</label><input type="number" id="c-bruto" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white text-sm text-lg font-bold" placeholder="0"></div>
+                    </div>
+                    <div id="c-result" class="mt-4 hidden p-4 rounded-lg border border-slate-700 bg-slate-900"></div>
+                `;
+            }
+
+            const modalHtml = `
+                <div class="fixed inset-0 z-[110]">
+                    <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity" onclick="window.closeCalc()"></div>
+                    <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
+                        <div class="relative w-full max-w-sm bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden">
+                            <div class="flex justify-between items-center p-4 border-b border-slate-700 bg-slate-900/50">
+                                <h3 class="font-bold text-white flex items-center gap-2"><i class="fa-solid ${icon}"></i> ${title}</h3>
+                                <button onclick="window.closeCalc()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            <div class="p-5">${contentHtml}</div>
+                            <div class="p-4 border-t border-slate-700 bg-slate-900/80">
+                                <button onclick="window.${calcFunction}" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-lg shadow-lg">Hitung Sekarang</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('calc-modal-container').innerHTML = modalHtml;
+        };
+
+        window.runKredit = function() {
+            let harga = Number(document.getElementById('c-harga').value);
+            let tenor = Number(document.getElementById('c-tenor').value);
+            let name = document.getElementById('c-nama').value || 'Barang';
+            if(!harga || !tenor) {
+                window.showToast('Harap isi Harga Barang dan Tenor', 'error');
+                return;
+            }
+
+            let cicilan = harga / tenor;
+            let maxAman = window.averageSalary * 0.3; // max 30% of salary
+            let rasio = (cicilan / window.averageSalary) * 100;
+            
+            let resBox = document.getElementById('c-result');
+            let statusClass = '', statusText = '', icon = '';
+            
+            if(rasio <= 20) { statusClass = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'; statusText = 'Sangat Aman'; icon='fa-circle-check'; }
+            else if(rasio <= 30) { statusClass = 'bg-amber-500/10 border-amber-500/30 text-amber-400'; statusText = 'Batas Maksimal (Hati-hati)'; icon='fa-triangle-exclamation'; }
+            else { statusClass = 'bg-rose-500/10 border-rose-500/30 text-rose-400'; statusText = 'Bahaya (Risiko Tinggi)'; icon='fa-skull-crossbones'; }
+
+            resBox.className = `mt-4 p-4 rounded-lg border ${statusClass}`;
+            resBox.innerHTML = `
+                <h4 class="text-xl font-bold">${formatRp(cicilan)}<span class="text-xs font-normal"> / bln</span></h4>
+                <p class="text-sm mt-1 mb-2 font-medium"><i class="fa-solid ${icon}"></i> ${statusText}</p>
+                <div class="text-xs opacity-80 pt-2 border-t border-current/20">Cicilan memakan <b>${rasio.toFixed(1)}%</b> dari rata-rata gaji. Batas aman: ${formatRp(maxAman)}/bln (30%).</div>
+            `;
+            resBox.classList.remove('hidden');
+        };
+
+        window.runDarurat = function() {
+            let status = Number(document.getElementById('c-status').value);
+            let pengeluaran = Number(document.getElementById('c-pengeluaran').value);
+            let terkumpul = Number(document.getElementById('c-terkumpul').value) || 0;
+            if(!pengeluaran) {
+                window.showToast('Harap isi Pengeluaran Bulanan', 'error');
+                return;
+            }
+
+            let target = status * pengeluaran;
+            let persen = Math.min((terkumpul / target) * 100, 100);
+            let sisa = target - terkumpul;
+
+            let resBox = document.getElementById('c-result');
+            resBox.innerHTML = `
+                <p class="text-xs text-slate-400">Target Dana Darurat Anda</p>
+                <h4 class="text-xl font-bold text-emerald-400 mt-1">${formatRp(target)}</h4>
+                <div class="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
+                    <div class="bg-emerald-500 h-2 rounded-full progress-animate" style="width: ${persen}%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] mt-1 text-slate-500">
+                    <span>${persen.toFixed(1)}% Terkumpul</span>
+                    <span>${sisa > 0 ? 'Kurang ' + formatRp(sisa) : 'Tercapai! 🎉'}</span>
+                </div>
+            `;
+            resBox.classList.remove('hidden');
+        };
+
+        window.runWishlist = function() {
+            let harga = Number(document.getElementById('c-harga').value);
+            let tabung = Number(document.getElementById('c-tabung').value);
+            let name = document.getElementById('c-nama').value || 'Impian Anda';
+            if(!harga || !tabung) {
+                window.showToast('Harap isi Harga dan Rencana Tabungan', 'error');
+                return;
+            }
+
+            let bln = Math.ceil(harga / tabung);
+            
+            // Hitung bulan perkiraan selesai
+            let now = new Date();
+            now.setMonth(now.getMonth() + bln);
+            let tglSelesai = now.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+
+            let resBox = document.getElementById('c-result');
+            resBox.innerHTML = `
+                <div class="bg-pink-500/20 w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-2">
+                    <i class="fa-solid fa-calendar-check text-pink-400 text-xl"></i>
+                </div>
+                <h4 class="text-2xl font-bold text-white">${bln} Bulan</h4>
+                <p class="text-sm text-slate-400 mt-1">${name} akan terbeli pada <b>${tglSelesai}</b> jika konsisten.</p>
+            `;
+            resBox.classList.remove('hidden');
+        };
+
+        window.runPajak = function() {
+            let bruto = Number(document.getElementById('c-bruto').value);
+            if(!bruto) {
+                window.showToast('Harap isi Tawaran Gaji Kotor', 'error');
+                return;
+            }
+
+            // Simple standard BPJS deduction for employees
+            // BPJS Kes = 1% (max cut from 12jt base usually, but we simplify here)
+            // JHT = 2%
+            // JP = 1% (max cut from approx 10jt base, simplified here)
+            let limitKes = Math.min(bruto, 12000000);
+            let limitJp = Math.min(bruto, 10042300);
+
+            let potKes = limitKes * 0.01;
+            let potJht = bruto * 0.02;
+            let potJp = limitJp * 0.01;
+            let totalPotongan = potKes + potJht + potJp;
+            let neto = bruto - totalPotongan;
+
+            let resBox = document.getElementById('c-result');
+            resBox.innerHTML = `
+                <div class="text-left text-sm space-y-2">
+                    <div class="flex justify-between text-slate-400"><span>Gaji Bruto</span> <span class="text-white">${formatRp(bruto)}</span></div>
+                    <div class="flex justify-between text-slate-500 text-xs"><span>BPJS Kes (1%)</span> <span>-${formatRp(potKes)}</span></div>
+                    <div class="flex justify-between text-slate-500 text-xs"><span>Jaminan Hari Tua (2%)</span> <span>-${formatRp(potJht)}</span></div>
+                    <div class="flex justify-between text-slate-500 text-xs pb-2 border-b border-slate-700"><span>Jaminan Pensiun (1%)</span> <span>-${formatRp(potJp)}</span></div>
+                    
+                    <div class="flex justify-between font-bold text-amber-400 pt-1"><span>Estimasi Gaji Bersih</span> <span>${formatRp(neto)}</span></div>
+                    <p class="text-[10px] text-slate-500 mt-2">*Belum termasuk potongan PPh21 (Pajak) jika melebihi PTKP.</p>
+                </div>
+            `;
+            resBox.classList.remove('hidden');
         };
 
         // Mulai aplikasi
